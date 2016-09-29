@@ -20,3 +20,9 @@ class StartMyFilterEvent(upis.upi.EventBase):
 class StopMyFilterEvent(upis.upi.EventBase):
     def __init__(self):
         super().__init__()
+
+
+class ChangeWindowSizeEvent(upis.upi.EventBase):
+    def __init__(self, value):
+        super().__init__()
+        self.window = value

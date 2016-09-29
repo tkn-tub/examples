@@ -5,8 +5,7 @@ import wishful_upis as upis
 from wishful_agent.core import wishful_module
 from wishful_agent.timer import TimerEventSender
 from common import AveragedSpectrumScanSampleEvent
-from common import StartMyFilterEvent
-from common import StopMyFilterEvent
+from common import ChangeWindowSizeEvent
 
 __author__ = "Piotr Gawlowicz"
 __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
@@ -20,18 +19,16 @@ class PeriodicEvaluationTimeEvent(upis.mgmt.TimeEvent):
 
 
 @wishful_module.build_module
-class MyController(wishful_module.ControllerModule):
+class MyController(wishful_module.Application):
     def __init__(self):
         super(MyController, self).__init__()
         self.log = logging.getLogger('MyController')
         self.running = False
-        self.nodes = []
 
         self.timeInterval = 10
         self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
         self.timer.start(self.timeInterval)
 
-        self.myFilterRunning = False
         self.packetLossEventsEnabled = False
 
     @wishful_module.on_start()
@@ -50,7 +47,7 @@ class MyController(wishful_module.ControllerModule):
 
         self.log.info("Added new node: {}, Local: {}"
                       .format(node.uuid, node.local))
-        self.nodes.append(node)
+        self._add_node(node)
 
         for dev in node.get_devices():
             print("Dev: ", dev.name)
@@ -78,8 +75,7 @@ class MyController(wishful_module.ControllerModule):
         self.log.info("Node lost".format())
         node = event.node
         reason = event.reason
-        if node in self.nodes:
-            self.nodes.remove(node)
+        if self._remove_node(node):
             self.log.info("Node: {}, Local: {} removed reason: {}"
                           .format(node.uuid, node.local, reason))
 
@@ -119,13 +115,13 @@ class MyController(wishful_module.ControllerModule):
         # go over collected samples, etc....
         # make some decisions, etc...
         print("Periodic Evaluation")
-        print("My nodes: ", [node.hostname for node in self.nodes])
+        print("My nodes: ", [node.hostname for node in self.get_nodes()])
         self.timer.start(self.timeInterval)
 
-        if len(self.nodes) == 0:
+        if len(self.get_nodes()) == 0:
             return
 
-        node = self.nodes[0]
+        node = self.get_node(0)
         device = node.get_device(0)
 
         if self.packetLossEventsEnabled:
@@ -135,12 +131,18 @@ class MyController(wishful_module.ControllerModule):
             device.enable_event(upis.radio.PacketLossEvent)
             self.packetLossEventsEnabled = True
 
-        if self.myFilterRunning:
-            self.send_event(StopMyFilterEvent())
-            self.myFilterRunning = False
+        avgFilterApp = None
+        for app in node.get_apps():
+            if app.name == "MyAvgFilter":
+                avgFilterApp = app
+                break
+
+        if avgFilterApp.is_enabled():
+            avgFilterApp.stop()
         else:
-            self.send_event(StartMyFilterEvent())
-            self.myFilterRunning = True
+            avgFilterApp.start()
+            event = ChangeWindowSizeEvent(random.randint(10, 50))
+            avgFilterApp.send_event(event)
 
         # execute non-blocking function immediately
         device.blocking(False).radio.set_tx_power(random.randint(1, 20), "wlan0")

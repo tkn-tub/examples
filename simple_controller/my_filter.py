@@ -2,8 +2,7 @@ import logging
 import wishful_upis as upis
 from wishful_agent.core import wishful_module
 from common import AveragedSpectrumScanSampleEvent
-from common import StartMyFilterEvent
-from common import StopMyFilterEvent
+from common import ChangeWindowSizeEvent
 
 __author__ = "Piotr Gawlowicz"
 __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
@@ -17,24 +16,15 @@ class MyAvgFilter(wishful_module.Application):
         super(MyAvgFilter, self).__init__()
         self.log = logging.getLogger('MyFilter')
         self.window = window
-        self.running = False
         self.samples = []
 
-    @wishful_module.on_event(StartMyFilterEvent)
-    def start_filter(self, event):
-        self.log.info("Start MyAvgFilter")
-        self.running = True
-
-    @wishful_module.on_event(StopMyFilterEvent)
-    def stop_filter(self, event):
-        self.log.info("Stop MyAvgFilter")
-        self.running = False
+    @wishful_module.on_event(ChangeWindowSizeEvent)
+    def change_window_size(self, event):
+        self.log.info("New window size: {}".format(event.window))
+        self.window = event.window
 
     @wishful_module.on_event(upis.radio.SpectralScanSampleEvent)
     def serve_spectral_scan_sample(self, event):
-        if not self.running:
-            return
-
         sample = event.sample
         node = event.node
         device = event.device
