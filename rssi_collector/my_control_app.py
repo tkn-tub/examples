@@ -90,5 +90,5 @@ class MyController(wishful_module.ControllerModule):
         print("My nodes: ", [node.hostname for node in self.get_nodes()])
         self.timer.start(self.timeInterval)
 
-        if len(self.nodes) == 0:
+        if len(self.get_nodes()) == 0:
             return

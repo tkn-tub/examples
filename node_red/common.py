@@ -20,6 +20,12 @@ class AveragedSpectrumScanSampleEvent(upis.upi.EventBase):
         return cls(avg)
 
 
+class ChangeWindowSize(upis.upi.EventBase):
+    def __init__(self, value):
+        super().__init__()
+        self.window = value
+
+
 class StartMyFilterEvent(upis.upi.EventBase):
     def __init__(self):
         super().__init__()
