@@ -1,8 +1,8 @@
 import logging
 import datetime
 import random
-import wishful_upis as upis
 from wishful_agent.core import wishful_module
+from wishful_agent.core import events
 from wishful_agent.timer import TimerEventSender
 
 
@@ -12,7 +12,7 @@ __version__ = "0.1.0"
 __email__ = "{gawlowicz}@tkn.tu-berlin.de"
 
 
-class PeriodicEvaluationTimeEvent(upis.mgmt.TimeEvent):
+class PeriodicEvaluationTimeEvent(events.TimeEvent):
     def __init__(self):
         super().__init__()
 

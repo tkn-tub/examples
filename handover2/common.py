@@ -1,4 +1,4 @@
-import wishful_upis as upis
+from wishful_agent.core import events
 
 __author__ = "Zubow"
 __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
@@ -6,7 +6,7 @@ __version__ = "0.1.0"
 __email__ = "{zubow}@tkn.tu-berlin.de"
 
 
-class CQIReportingEvent(upis.upi.EventBase):
+class CQIReportingEvent(events.EventBase):
     '''
     Events reported by each AP.
     '''
@@ -16,7 +16,7 @@ class CQIReportingEvent(upis.upi.EventBase):
         self.curr_sigpower = curr_sigpower
 
 
-class DHCPEvent(upis.upi.EventBase):
+class DHCPEvent(events.EventBase):
     '''
     Base class for event reported by DHCP
     '''

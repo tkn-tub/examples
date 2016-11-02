@@ -3,6 +3,7 @@ import datetime
 import random
 import wishful_upis as upis
 from wishful_agent.core import wishful_module
+from wishful_agent.core import events
 from wishful_agent.timer import TimerEventSender
 from common import AveragedSpectrumScanSampleEvent
 from common import ChangeWindowSizeEvent
@@ -13,7 +14,7 @@ __version__ = "0.1.0"
 __email__ = "{gawlowicz}@tkn.tu-berlin.de"
 
 
-class PeriodicEvaluationTimeEvent(upis.mgmt.TimeEvent):
+class PeriodicEvaluationTimeEvent(events.TimeEvent):
     def __init__(self):
         super().__init__()
 
@@ -41,7 +42,7 @@ class MyController(wishful_module.Application):
         print("stop control app")
         self.running = False
 
-    @wishful_module.on_event(upis.mgmt.NewNodeEvent)
+    @wishful_module.on_event(events.NewNodeEvent)
     def add_node(self, event):
         node = event.node
 
@@ -69,8 +70,8 @@ class MyController(wishful_module.Application):
         device.start_service(
             upis.radio.SpectralScanService(rate=1000, f_range=[2200, 2500]))
 
-    @wishful_module.on_event(upis.mgmt.NodeExitEvent)
-    @wishful_module.on_event(upis.mgmt.NodeLostEvent)
+    @wishful_module.on_event(events.NodeExitEvent)
+    @wishful_module.on_event(events.NodeLostEvent)
     def remove_node(self, event):
         self.log.info("Node lost".format())
         node = event.node

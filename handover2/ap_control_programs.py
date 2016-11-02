@@ -1,8 +1,7 @@
 import logging
 import datetime
-import random
-import wishful_upis as upis
 from wishful_agent.core import wishful_module
+from wishful_agent.core import events
 from wishful_agent.timer import TimerEventSender
 from common import CQIReportingEvent
 
@@ -19,23 +18,31 @@ Set of control programs to be executed on each AP locally:
 (1) Scanner for reporting handover opportunities
 '''
 
-class PeriodicChannelSwitchTimeEvent(upis.mgmt.TimeEvent):
+
+class PeriodicChannelSwitchTimeEvent(events.TimeEvent):
     def __init__(self):
         super().__init__()
 
-class PeriodicCQIReportingTimeEvent(upis.mgmt.TimeEvent):
+
+class PeriodicCQIReportingTimeEvent(events.TimeEvent):
     def __init__(self):
         super().__init__()
+
 
 """
-    Local control program running on each AP node to collect information about current link signal power and towards
+    Local control program running on each AP node to collect
+    information about current link signal power and towards
     candidate APs using passive scanning.
 
-    @return it announces the results using periodic events; i.e. CQIReportingEvent
+    @return it announces the results using periodic events;
+    i.e. CQIReportingEvent
 """
+
+
 @wishful_module.build_module
 class Scanner(wishful_module.ControllerModule):
-    def __init__(self, mode, ap_iface, scan_iface, channels, hopping_interval, reporting_interval):
+    def __init__(self, mode, ap_iface, scan_iface, channels,
+                 hopping_interval, reporting_interval):
         super(Scanner, self).__init__()
         self.log = logging.getLogger('Scanner')
         self.mode = mode

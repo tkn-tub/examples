@@ -1,8 +1,8 @@
 import logging
 import datetime
 import pprint
-import wishful_upis as upis
 from wishful_agent.core import wishful_module
+from wishful_agent.core import events
 from wishful_agent.timer import TimerEventSender
 
 __author__ = "Anatolij Zubow"
@@ -10,13 +10,16 @@ __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
 __version__ = "0.1.0"
 __email__ = "{zubow}@tkn.tu-berlin.de"
 
-class PeriodicTimeEvent(upis.mgmt.TimeEvent):
+
+class PeriodicTimeEvent(events.TimeEvent):
     def __init__(self):
         super().__init__()
+
 
 '''
 Simple control program for testing mininet functionality.
 '''
+
 
 @wishful_module.build_module
 class MininetWiFiController(wishful_module.ControllerModule):
@@ -24,7 +27,7 @@ class MininetWiFiController(wishful_module.ControllerModule):
         super(MininetWiFiController, self).__init__()
         self.log = logging.getLogger('MininetWiFiController')
         self.interval = 5
-        self.nodes = {} # APs UUID -> node
+        self.nodes = {}  # APs UUID -> node
         self.running = False
 
     @wishful_module.on_start()
@@ -41,7 +44,7 @@ class MininetWiFiController(wishful_module.ControllerModule):
     def my_stop_function(self):
         self.running = False
 
-    @wishful_module.on_event(upis.mgmt.NewNodeEvent)
+    @wishful_module.on_event(events.NewNodeEvent)
     def add_node(self, event):
         node = event.node
 
@@ -49,9 +52,8 @@ class MininetWiFiController(wishful_module.ControllerModule):
                       .format(node.uuid))
         self.nodes[node.uuid] = node
 
-
-    @wishful_module.on_event(upis.mgmt.NodeExitEvent)
-    @wishful_module.on_event(upis.mgmt.NodeLostEvent)
+    @wishful_module.on_event(events.NodeExitEvent)
+    @wishful_module.on_event(events.NodeLostEvent)
     def remove_node(self, event):
         self.log.info("Node lost".format())
         node = event.node
@@ -60,7 +62,6 @@ class MininetWiFiController(wishful_module.ControllerModule):
             del self.nodes[node.uuid]
             self.log.info("Node: {}, removed reason: {}"
                           .format(node.uuid, reason))
-
 
     @wishful_module.on_event(PeriodicTimeEvent)
     def periodic_tx_stats(self, event):
@@ -88,4 +89,3 @@ class MininetWiFiController(wishful_module.ControllerModule):
         except Exception as e:
             self.log.error("{} !!!Exception!!!: {}".format(
                 datetime.datetime.now(), e))
-

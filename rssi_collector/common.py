@@ -1,4 +1,4 @@
-import wishful_upis as upis
+from wishful_agent.core import events
 
 __author__ = "Piotr Gawlowicz"
 __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
@@ -6,7 +6,7 @@ __version__ = "0.1.0"
 __email__ = "{gawlowicz}@tkn.tu-berlin.de"
 
 
-class AveragedRssiSampleEvent(upis.upi.EventBase):
+class AveragedRssiSampleEvent(events.EventBase):
     def __init__(self, receiverUuid, receiverDevId, ta, rssi):
         super().__init__()
         self.receiverUuid = receiverUuid
@@ -28,11 +28,11 @@ class AveragedRssiSampleEvent(upis.upi.EventBase):
         return cls(receiverUuid, receiverDevId, ta, rssi)
 
 
-class StartMyFilterEvent(upis.upi.EventBase):
+class StartMyFilterEvent(events.EventBase):
     def __init__(self):
         super().__init__()
 
 
-class StopMyFilterEvent(upis.upi.EventBase):
+class StopMyFilterEvent(events.EventBase):
     def __init__(self):
         super().__init__()
