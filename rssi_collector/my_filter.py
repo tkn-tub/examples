@@ -2,7 +2,7 @@ import logging
 from collections import defaultdict
 
 import wishful_upis as upis
-from wishful_agent.core import wishful_module
+from uniflex.core import modules
 from common import AveragedRssiSampleEvent
 
 __author__ = "Piotr Gawlowicz"
@@ -11,8 +11,8 @@ __version__ = "0.1.0"
 __email__ = "{gawlowicz}@tkn.tu-berlin.de"
 
 
-@wishful_module.build_module
-class MyAvgFilter(wishful_module.ControllerModule):
+@modules.build_module
+class MyAvgFilter(modules.ControllerModule):
     def __init__(self, window):
         super(MyAvgFilter, self).__init__()
         self.log = logging.getLogger('MyAvgFilter')
@@ -37,7 +37,7 @@ class MyAvgFilter(wishful_module.ControllerModule):
         for i in range(sampleNum):
             self.rssi[receiverUuid][ta].pop(0)
 
-    @wishful_module.on_event(upis.radio.RssiSampleEvent)
+    @modules.on_event(upis.radio.RssiSampleEvent)
     def serve_rssi_sample(self, event):
 
         rssi = event.rssi

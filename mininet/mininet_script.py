@@ -2,18 +2,20 @@
 # -*- coding: utf-8 -*-
 
 """
-Wishful IEEE 802.11 example consisting of two APs and two mobile STAs. Each AP is controlled by an
-Wishful agent. Moreover, a global controller which is running on AP1 is controlling the two APs through
+UniFlex IEEE 802.11 example consisting of two APs and
+two mobile STAs. Each AP is controlled by an
+UniFlex agent. Moreover, a global controller which is
+running on AP1 is controlling the two APs through
 their agents.
 """
 
 from mininet.net import Mininet
-from mininet.node import Controller,OVSKernelSwitch
+from mininet.node import Controller, OVSKernelSwitch
 from mininet.link import TCLink
 from mininet.cli import CLI
 from mininet.log import setLogLevel
 
-from wishful_mininet import WishfulNode, WishfulAgent, WishfulController
+from uniflex_mininet import UniFlexNode
 import time
 
 __author__ = "Zubow"
@@ -55,24 +57,24 @@ def topology():
     print("*** Starting network")
     net.build()
     c1.start()
-    ap1.start( [c1] )
-    ap2.start( [c1] )
+    ap1.start([c1])
+    ap2.start([c1])
 
-    "Configure IP addresses on APs for binding Wishful agent"
+    "Configure IP addresses on APs for binding UniFlex agent"
     ap1.cmd('ifconfig ap1-eth1 20.0.0.2/8')
     ap2.cmd('ifconfig ap2-eth1 20.0.0.3/8')
 
-    print("*** Starting Wishful framework")
+    print("*** Starting UniFlex framework")
     folder = './'
 
     print("*** ... agents ...")
-    agent1 = WishfulAgent(ap1, folder + 'ap1_config.yaml')
-    agent2 = WishfulAgent(ap2, folder + 'ap2_config.yaml')
+    agent1 = UniFlexNode(ap1, folder + 'ap1_config.yaml')
+    agent2 = UniFlexNode(ap2, folder + 'ap2_config.yaml')
     agent1.start()
     agent2.start()
 
     print("*** ... controller ...")
-    wf_ctrl = WishfulController(ap1, folder + 'controller_config.yaml')
+    wf_ctrl = UniFlexNode(ap1, folder + 'controller_config.yaml')
     wf_ctrl.start()
 
     print("*** Starting network")
@@ -97,22 +99,23 @@ def topology():
     print("*** perform ping")
     sta1.cmd('ping -c20 %s' % sta2.IP())
 
-    print("*** Check that Wishful agents/controllers are still running ...")
+    print("*** Check that UniFlex agents/controllers are still running ...")
     if not wf_ctrl.check_is_running() or not agent1.check_is_running() or not agent2.check_is_running():
-        raise Exception("Error; wishful controller or agents not running; check logfiles ... ")
+        raise Exception("Error; UniFlex controller or agents not running; check logfiles ... ")
     else:
-        print("*** Wishful agents/controllers: OK")
+        print("*** UniFlex agents/controllers: OK")
 
     if MN_CLI:
         print("*** Running CLI")
-        CLI( net )
+        CLI(net)
 
     print("*** Stopping network")
-    wf_ctrl.stop()    
+    wf_ctrl.stop()
     agent1.stop()
     agent2.stop()
     net.stop()
 
+
 if __name__ == '__main__':
-    setLogLevel( 'info' )
+    setLogLevel('info')
     topology()

@@ -1,9 +1,9 @@
 import logging
 import datetime
 import wishful_upis as upis
-from wishful_agent.core import wishful_module
-from wishful_agent.core import events
-from wishful_agent.timer import TimerEventSender
+from uniflex.core import modules
+from uniflex.core import events
+from uniflex.timer import TimerEventSender
 from common import CQIReportingEvent
 from common import DHCPNewEvent
 from common import DHCPDelEvent
@@ -27,8 +27,8 @@ Set of control programs to be executed on central node, e.g. server:
 (2) DHCPDaemon - wraps DHCP server and informs BigAP controller about new and removed leases.
 '''
 
-@wishful_module.build_module
-class BigAPController(wishful_module.ControllerModule):
+@modules.build_module
+class BigAPController(modules.ControllerModule):
     def __init__(self, mode, ap_iface):
         super(BigAPController, self).__init__()
         self.log = logging.getLogger('BigAPController')
@@ -41,7 +41,7 @@ class BigAPController(wishful_module.ControllerModule):
         self.nodes = {} # APs UUID -> node
         self.servingAPs = {} # STA_MAC_ADDR -> AP node
 
-    @wishful_module.on_start()
+    @modules.on_start()
     def my_start_function(self):
         print("BiGAP control app started")
 
@@ -51,12 +51,12 @@ class BigAPController(wishful_module.ControllerModule):
 
         self.running = True
 
-    @wishful_module.on_exit()
+    @modules.on_exit()
     def my_stop_function(self):
         print("BiGAP control app stopped")
         self.running = False
 
-    @wishful_module.on_event(events.NewNodeEvent)
+    @modules.on_event(events.NewNodeEvent)
     def add_node(self, event):
         node = event.node
 
@@ -72,8 +72,8 @@ class BigAPController(wishful_module.ControllerModule):
             self.log.info("Dev: ", dev.name)
 
 
-    @wishful_module.on_event(events.NodeExitEvent)
-    @wishful_module.on_event(events.NodeLostEvent)
+    @modules.on_event(events.NodeExitEvent)
+    @modules.on_event(events.NodeLostEvent)
     def remove_node(self, event):
         self.log.info("Node lost".format())
         node = event.node
@@ -84,7 +84,7 @@ class BigAPController(wishful_module.ControllerModule):
                           .format(node.uuid, node.local, reason))
 
 
-    @wishful_module.on_event(PeriodicSTADiscoveryTimeEvent)
+    @modules.on_event(PeriodicSTADiscoveryTimeEvent)
     def periodic_sta_discovery(self, event):
 
         if self.node == None:
@@ -105,7 +105,7 @@ class BigAPController(wishful_module.ControllerModule):
 
 
 
-    @wishful_module.on_event(CQIReportingEvent)
+    @modules.on_event(CQIReportingEvent)
     def serve_cqi_report_event(self, event):
         '''
             From APs
@@ -125,7 +125,7 @@ class BigAPController(wishful_module.ControllerModule):
             pass
 
 
-    @wishful_module.on_event(DHCPNewEvent)
+    @modules.on_event(DHCPNewEvent)
     def serve_dhcp_new_event(self, event):
         '''
             From DHCP
@@ -143,7 +143,7 @@ class BigAPController(wishful_module.ControllerModule):
             pass
 
 
-    @wishful_module.on_event(DHCPDelEvent)
+    @modules.on_event(DHCPDelEvent)
     def serve_dhcp_del_event(self, event):
         '''
             From DHCP
@@ -175,7 +175,7 @@ class BigAPController(wishful_module.ControllerModule):
             self.log.fatal("... An error occurred : %s" % e)
             raise e
 
-    @wishful_module.on_event(upis.wifi.WiFiGetServingAPReplyEvent)
+    @modules.on_event(upis.wifi.WiFiGetServingAPReplyEvent)
     def rx_servingAP_reply(self, event):
         '''
             From wireless topology app.
@@ -207,7 +207,7 @@ class BigAPController(wishful_module.ControllerModule):
             raise e
 
 
-    @wishful_module.on_event(upis.net_func.TriggerHandoverReplyEvent)
+    @modules.on_event(upis.net_func.TriggerHandoverReplyEvent)
     def handle_handover_reply(self, event):
         '''
             From Handover module
@@ -220,8 +220,8 @@ class BigAPController(wishful_module.ControllerModule):
 """
     DHCP daemon which sends events used for STA client discovery
 """
-@wishful_module.build_module
-class DHCPDaemon(wishful_module.ControllerModule):
+@modules.build_module
+class DHCPDaemon(modules.ControllerModule):
     def __init__(self, mode, zmq_port):
         super(DHCPDaemon, self).__init__()
         self.log = logging.getLogger('DHCPDaemon')
@@ -231,7 +231,7 @@ class DHCPDaemon(wishful_module.ControllerModule):
         self.running = False
 
 
-    @wishful_module.on_start()
+    @modules.on_start()
     def my_start_function(self):
         print("BiGAP control app started")
 
@@ -263,7 +263,7 @@ class DHCPDaemon(wishful_module.ControllerModule):
                     mac = dhcpNew[0]
                     ip = dhcpNew[1]
 
-                    #if mac not in self.activeSTAs:
+                    # if mac not in self.activeSTAs:
                     #    pass
 
                     event = DHCPNewEvent(mac, ip)
@@ -281,10 +281,9 @@ class DHCPDaemon(wishful_module.ControllerModule):
             else:
                 print('DHCP Server sent unknown key in dictionary')
 
-    @wishful_module.on_exit()
+    @modules.on_exit()
     def my_stop_function(self):
         print("BiGAP control app stopped")
         # stop scanner
         self.process.kill()
         self.running = False
-

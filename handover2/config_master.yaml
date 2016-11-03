@@ -1,4 +1,4 @@
-## WiSHFUL Agent config file of the BigAP controller
+## UniFlex Agent config file of the BigAP controller
 
 agent_config:
   name: "BigAP_Controller"
@@ -24,21 +24,21 @@ controllers:
       kwargs : {"mode": "GLOBAL", "zmq_port" : 6868}
 
   handover:
-      module : wishful_module_handover
+      module : uniflex_module_handover
       class_name : HandoverModule
       kwargs : {"mode": "GLOBAL"}
 
   wifi_topology:
-      module : wishful_module_wireless_topology
+      module : uniflex_module_wireless_topology
       class_name : WifiTopologyModule
       kwargs : {"mode": "GLOBAL"}
 
 modules:
   discovery:
-        module : wishful_module_discovery_pyre
+        module : uniflex_module_discovery_pyre
         class_name : PyreDiscoveryControllerModule
         kwargs: {"iface":"lo",
-                 "groupName":"wishful_1234",
+                 "groupName":"uniflex_1234",
                  "sub":"tcp://127.0.0.1:8990",
                  "pub":"tcp://127.0.0.1:8989"
                 }

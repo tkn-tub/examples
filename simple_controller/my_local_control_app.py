@@ -2,9 +2,9 @@ import logging
 import datetime
 import random
 import wishful_upis as upis
-from wishful_agent.core import wishful_module
-from wishful_agent.core import events
-from wishful_agent.timer import TimerEventSender
+from uniflex.core import modules
+from uniflex.core import events
+from uniflex.timer import TimerEventSender
 from common import AveragedSpectrumScanSampleEvent
 from common import StartMyFilterEvent
 from common import StopMyFilterEvent
@@ -20,8 +20,8 @@ class PeriodicEvaluationTimeEvent(events.TimeEvent):
         super().__init__()
 
 
-@wishful_module.build_module
-class MyController(wishful_module.ControllerModule):
+@modules.build_module
+class MyController(modules.ControllerModule):
     def __init__(self):
         super(MyController, self).__init__()
         self.log = logging.getLogger('MyController')
@@ -35,7 +35,7 @@ class MyController(wishful_module.ControllerModule):
         self.myFilterRunning = False
         self.packetLossEventsEnabled = False
 
-    @wishful_module.on_start()
+    @modules.on_start()
     def my_start_function(self):
         print("start control app")
         self.running = True
@@ -64,19 +64,19 @@ class MyController(wishful_module.ControllerModule):
         device.start_service(
             upis.radio.SpectralScanService(rate=1000, f_range=[2200, 2500]))
 
-    @wishful_module.on_exit()
+    @modules.on_exit()
     def my_stop_function(self):
         print("stop control app")
         self.running = False
 
-    @wishful_module.on_event(upis.radio.PacketLossEvent)
+    @modules.on_event(upis.radio.PacketLossEvent)
     def serve_packet_loss_event(self, event):
         node = event.node
         device = event.device
         self.log.info("Packet loss in node {}, dev: {}"
                       .format(node.hostname, device.name))
 
-    @wishful_module.on_event(AveragedSpectrumScanSampleEvent)
+    @modules.on_event(AveragedSpectrumScanSampleEvent)
     def serve_spectral_scan_sample(self, event):
         avgSample = event.avg
         self.log.info("Averaged Spectral Scan Sample: {}"
@@ -100,7 +100,7 @@ class MyController(wishful_module.ControllerModule):
               "Node: {}, Dev: {}, was set to: {}"
               .format(node.hostname, dev.name, msg))
 
-    @wishful_module.on_event(PeriodicEvaluationTimeEvent)
+    @modules.on_event(PeriodicEvaluationTimeEvent)
     def periodic_evaluation(self, event):
         # go over collected samples, etc....
         # make some decisions, etc...

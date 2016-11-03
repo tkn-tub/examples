@@ -1,9 +1,9 @@
 import logging
 import datetime
 import wishful_upis as upis
-from wishful_agent.core import wishful_module
-from wishful_agent.core import events
-from wishful_agent.timer import TimerEventSender
+from uniflex.core import modules
+from uniflex.core import events
+from uniflex.timer import TimerEventSender
 
 __author__ = "Anatolij Zubow"
 __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
@@ -21,8 +21,8 @@ Simple control program for topology discovery.
 '''
 
 
-@wishful_module.build_module
-class WiFiTopologyController(wishful_module.ControllerModule):
+@modules.build_module
+class WiFiTopologyController(modules.ControllerModule):
     def __init__(self, mode, ap_iface):
         super(WiFiTopologyController, self).__init__()
         self.log = logging.getLogger('WiFiTopologyController')
@@ -34,7 +34,7 @@ class WiFiTopologyController(wishful_module.ControllerModule):
         self.nodes = {}  # APs UUID -> node
         self.active_sta_mac_addrs = ['00:11:22:33:44:55']
 
-    @wishful_module.on_start()
+    @modules.on_start()
     def my_start_function(self):
         self.log.info("Topology control app started")
 
@@ -44,12 +44,12 @@ class WiFiTopologyController(wishful_module.ControllerModule):
 
         self.running = True
 
-    @wishful_module.on_exit()
+    @modules.on_exit()
     def my_stop_function(self):
         self.log.info("Topology control app stopped")
         self.running = False
 
-    @wishful_module.on_event(events.NewNodeEvent)
+    @modules.on_event(events.NewNodeEvent)
     def add_node(self, event):
         node = event.node
 
@@ -57,8 +57,8 @@ class WiFiTopologyController(wishful_module.ControllerModule):
                       .format(node.uuid))
         self.nodes[node.uuid] = node
 
-    @wishful_module.on_event(events.NodeExitEvent)
-    @wishful_module.on_event(events.NodeLostEvent)
+    @modules.on_event(events.NodeExitEvent)
+    @modules.on_event(events.NodeLostEvent)
     def remove_node(self, event):
         self.log.info("Node lost".format())
         node = event.node
@@ -68,7 +68,7 @@ class WiFiTopologyController(wishful_module.ControllerModule):
             self.log.info("Node: {}, removed reason: {}"
                           .format(node.uuid, reason))
 
-    @wishful_module.on_event(PeriodicSTADiscoveryTimeEvent)
+    @modules.on_event(PeriodicSTADiscoveryTimeEvent)
     def periodic_sta_discovery(self, event):
 
         self.log.info("Periodic STA discovery")
@@ -84,7 +84,7 @@ class WiFiTopologyController(wishful_module.ControllerModule):
             self.log.error("{} !!!Exception!!!: {}".format(
                 datetime.datetime.now(), e))
 
-    @wishful_module.on_event(upis.wifi.WiFiGetServingAPReplyEvent)
+    @modules.on_event(upis.wifi.WiFiGetServingAPReplyEvent)
     def rx_serving_reply(self, event):
 
         if event.ap_uuid in self.nodes:

@@ -1,4 +1,4 @@
-## WiSHFUL Agent config file
+## UniFlex Agent config file
 
 agent_config:
   name: 'Local_WiFi_Controller'
@@ -14,6 +14,6 @@ controllers:
 
 modules:
   wifi:
-      module : wishful_module_wifi
+      module : uniflex_module_wifi
       class_name : WifiModule
       devices : ['phy0']

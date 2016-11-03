@@ -9,7 +9,7 @@
 
     cd $HOME/.node-red
     sudo npm install zmq
-    sudo npm install wishful-project/node-red-wishful
+    sudo npm install uniflex/node-red-uniflex
     sudo npm install node-red-node-smooth
 
 # Run example flow graph - moving average filter:
@@ -19,13 +19,13 @@
 
 ![my_filter](./my_filter.png)
 
-# Run wishful-agent with master config:
+# Run uniflex-agent with master config:
 
-    wishful-agent --config ./config_master.yaml
+    uniflex-agent --config ./config_master.yaml
 
-# Run wishful-agent with slave config:
+# Run uniflex-agent with slave config:
 
-    wishful-agent --config ./config_slave.yaml
+    uniflex-agent --config ./config_slave.yaml
 
 # For debugging mode run with -v option
 

@@ -1,5 +1,5 @@
 
-## WiSHFUL Agent config file for the mininet wifi controller
+## UniFlex Agent config file for the mininet wifi controller
 
 agent_config:
   name: "Mininet_WiFi_Controller"
@@ -15,16 +15,16 @@ broker:
 
 controllers:
   mn_wifi_controller:
-      file : wishful_mn_controller.py
+      file : uniflex_mn_controller.py
       class_name : MininetWiFiController
       kwargs : {}
 
 modules:
   discovery:
-        module : wishful_module_discovery_pyre
+        module : uniflex_module_discovery_pyre
         class_name : PyreDiscoveryControllerModule
         kwargs: {"iface":"ap1-eth1",
-                 "groupName":"wishful_1234",
+                 "groupName":"uniflex_1234",
                  "sub":"tcp://20.0.0.2:8990",
                  "pub":"tcp://20.0.0.2:8989"
                 }

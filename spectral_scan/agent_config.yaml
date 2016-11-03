@@ -1,4 +1,4 @@
-## WiSHFUL Agent config file
+## UniFlex Agent config file
 
 agent_info:
   name: 'agent_123'
@@ -7,19 +7,19 @@ agent_info:
 
 modules:
   discovery:
-      module : wishful_module_discovery_pyre
+      module : uniflex_module_discovery_pyre
       class_name : PyreDiscoveryAgentModule
-      kwargs: {"iface":"eth0", "groupName":"wishful_1234"}
+      kwargs: {"iface":"eth0", "groupName":"uniflex_1234"}
 
   simple:
-      module : wishful_module_spectral_scan_ath9k
+      module : uniflex_module_spectral_scan_ath9k
       class_name : SpectralScanAth9kModule
       interfaces : ['wlan0']
 
   iperf:
-      module : wishful_module_iperf
+      module : uniflex_module_iperf
       class_name : IperfModule
 
 ##  rule_manager:
-##      module : wishful_module_rules
+##      module : uniflex_module_rules
 ##      class_name : RuleManagerModule

@@ -1,4 +1,4 @@
-## WiSHFUL Agent config file
+## UniFlex Agent config file
 
 agent_config:
   name: 'HC node'
@@ -8,15 +8,15 @@ agent_config:
 
 modules:
   discovery:
-      module : wishful_module_discovery_pyre
+      module : uniflex_module_discovery_pyre
       class_name : PyreDiscoveryAgentModule
-      kwargs: {"iface":"lo", "groupName":"wishful_1234"}
+      kwargs: {"iface":"lo", "groupName":"uniflex_1234"}
 
   simple:
-      module : wishful_module_simple
+      module : uniflex_module_simple
       class_name : SimpleModule2
       devices : ['phy0']
 
   iperf:
-      module : wishful_module_iperf
+      module : uniflex_module_iperf
       class_name : IperfModule

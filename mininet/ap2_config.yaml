@@ -1,4 +1,4 @@
-## WiSHFUL Agent config file
+## UniFlex Agent config file
 
 agent_config:
   name: 'AP2'
@@ -8,15 +8,15 @@ agent_config:
 
 modules:
   discovery:
-      module : wishful_module_discovery_pyre
+      module : uniflex_module_discovery_pyre
       class_name : PyreDiscoveryAgentModule
-      kwargs: {"iface":"ap2-eth1", "groupName":"wishful_1234"}
+      kwargs: {"iface":"ap2-eth1", "groupName":"uniflex_1234"}
 
   wlan:
-      module : wishful_module_wifi
+      module : uniflex_module_wifi
       class_name : WifiModule
       interfaces : ['ap2-wlan0', 'wlan0', 'wlan1']
 
   iperf:
-      module : wishful_module_iperf
+      module : uniflex_module_iperf
       class_name : IperfModule

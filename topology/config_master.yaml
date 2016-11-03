@@ -1,4 +1,4 @@
-## WiSHFUL Agent config file for the topology controller
+## UniFlex Agent config file for the topology controller
 
 agent_config:
   name: "Topology_Controller"
@@ -19,16 +19,16 @@ controllers:
       kwargs : {"mode": "GLOBAL", "ap_iface": "ap1"}
 
   wifi_topology:
-      module : wishful_module_wireless_topology
+      module : uniflex_module_wireless_topology
       class_name : WifiTopologyModule
       kwargs : {}
 
 modules:
   discovery:
-        module : wishful_module_discovery_pyre
+        module : uniflex_module_discovery_pyre
         class_name : PyreDiscoveryControllerModule
         kwargs: {"iface":"lo",
-                 "groupName":"wishful_1234",
+                 "groupName":"uniflex_1234",
                  "sub":"tcp://127.0.0.1:8990",
                  "pub":"tcp://127.0.0.1:8989"
                 }

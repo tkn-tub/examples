@@ -1,10 +1,7 @@
 import logging
 import datetime
-import time
-import random
 import wishful_upis as upis
-from wishful_agent.core import wishful_module
-from wishful_agent.timer import TimerEventSender
+from uniflex.core import modules
 
 __author__ = "Anatolij Zubow"
 __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
@@ -15,13 +12,13 @@ __email__ = "{zubow}@tkn.tu-berlin.de"
 Local test of WiFi ATH component.
 '''
 
-@wishful_module.build_module
-class HybridMACLocalController(wishful_module.ControllerModule):
+@modules.build_module
+class HybridMACLocalController(modules.ControllerModule):
     def __init__(self):
         super(HybridMACLocalController, self).__init__()
         self.log = logging.getLogger('HybridMACLocalController')
 
-    @wishful_module.on_start()
+    @modules.on_start()
     def my_start_function(self):
         self.log.info("start wifi ath test")
 
@@ -62,6 +59,6 @@ class HybridMACLocalController(wishful_module.ControllerModule):
 
         self.log.info('... done')
 
-    @wishful_module.on_exit()
+    @modules.on_exit()
     def my_stop_function(self):
         self.log.info("stop wifi ath test")

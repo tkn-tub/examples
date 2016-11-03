@@ -1,8 +1,8 @@
 import logging
 import datetime
-from wishful_agent.core import wishful_module
-from wishful_agent.core import events
-from wishful_agent.timer import TimerEventSender
+from uniflex.core import modules
+from uniflex.core import events
+from uniflex.timer import TimerEventSender
 from common import CQIReportingEvent
 
 import subprocess
@@ -39,8 +39,8 @@ class PeriodicCQIReportingTimeEvent(events.TimeEvent):
 """
 
 
-@wishful_module.build_module
-class Scanner(wishful_module.ControllerModule):
+@modules.build_module
+class Scanner(modules.ControllerModule):
     def __init__(self, mode, ap_iface, scan_iface, channels,
                  hopping_interval, reporting_interval):
         super(Scanner, self).__init__()
@@ -55,7 +55,7 @@ class Scanner(wishful_module.ControllerModule):
         self.next_ch_id = 0
         self.running = False
 
-    @wishful_module.on_start()
+    @modules.on_start()
     def my_start_function(self):
         self.log.debug("start scanner app")
 
@@ -78,14 +78,14 @@ class Scanner(wishful_module.ControllerModule):
 
         self.running = True
 
-    @wishful_module.on_exit()
+    @modules.on_exit()
     def my_stop_function(self):
         self.log.debug("stop scanner app")
         # stop scanner
         self.process.kill()
         self.running = False
 
-    @wishful_module.on_event(PeriodicChannelSwitchTimeEvent)
+    @modules.on_event(PeriodicChannelSwitchTimeEvent)
     def periodic_channel_switch(self, event):
 
         self.log.debug("Periodic channel hopping")
@@ -104,7 +104,7 @@ class Scanner(wishful_module.ControllerModule):
                 datetime.datetime.now(), e))
 
 
-    @wishful_module.on_event(PeriodicCQIReportingTimeEvent)
+    @modules.on_event(PeriodicCQIReportingTimeEvent)
     def periodic_reporting(self, event):
 
         self.log.debug("Periodic reporting")

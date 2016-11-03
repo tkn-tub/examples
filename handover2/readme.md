@@ -1,4 +1,4 @@
-WiSHFUL IEEE 802.11 handover example
+UniFlex IEEE 802.11 handover example
 ====================================
 
 # 0. Requirements
@@ -27,17 +27,17 @@ plus add patches ... tbd
 
 # 1. Running
 
-## 1.1 start local Wishful agent on each AP:
+## 1.1 start local UniFlex agent on each AP:
 
-    sudo ../../dev/bin/wishful-agent --config config_ap.yaml
+    sudo ../../dev/bin/uniflex-agent --config config_ap.yaml
 
-## 1.2 start local Wishful agent on the Gateway node (Linux):
+## 1.2 start local UniFlex agent on the Gateway node (Linux):
 
-    sudo ../../dev/bin/wishful-agent --config config_gw.yaml
+    sudo ../../dev/bin/uniflex-agent --config config_gw.yaml
 
-## 1.3 start global Wishful controller (BigAP):
+## 1.3 start global UniFlex controller (BigAP):
 
-    wishful-agent --config config_master.yaml
+    uniflex-agent --config config_master.yaml
 
 # 2. How to reference to?
 

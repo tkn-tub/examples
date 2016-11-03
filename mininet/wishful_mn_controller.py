@@ -1,9 +1,9 @@
 import logging
 import datetime
 import pprint
-from wishful_agent.core import wishful_module
-from wishful_agent.core import events
-from wishful_agent.timer import TimerEventSender
+from uniflex.core import modules
+from uniflex.core import events
+from uniflex.timer import TimerEventSender
 
 __author__ = "Anatolij Zubow"
 __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
@@ -21,8 +21,8 @@ Simple control program for testing mininet functionality.
 '''
 
 
-@wishful_module.build_module
-class MininetWiFiController(wishful_module.ControllerModule):
+@modules.build_module
+class MininetWiFiController(modules.ControllerModule):
     def __init__(self):
         super(MininetWiFiController, self).__init__()
         self.log = logging.getLogger('MininetWiFiController')
@@ -30,7 +30,7 @@ class MininetWiFiController(wishful_module.ControllerModule):
         self.nodes = {}  # APs UUID -> node
         self.running = False
 
-    @wishful_module.on_start()
+    @modules.on_start()
     def my_start_function(self):
         self.log.info("Topology control app started")
 
@@ -40,11 +40,11 @@ class MininetWiFiController(wishful_module.ControllerModule):
 
         self.running = True
 
-    @wishful_module.on_exit()
+    @modules.on_exit()
     def my_stop_function(self):
         self.running = False
 
-    @wishful_module.on_event(events.NewNodeEvent)
+    @modules.on_event(events.NewNodeEvent)
     def add_node(self, event):
         node = event.node
 
@@ -52,8 +52,8 @@ class MininetWiFiController(wishful_module.ControllerModule):
                       .format(node.uuid))
         self.nodes[node.uuid] = node
 
-    @wishful_module.on_event(events.NodeExitEvent)
-    @wishful_module.on_event(events.NodeLostEvent)
+    @modules.on_event(events.NodeExitEvent)
+    @modules.on_event(events.NodeLostEvent)
     def remove_node(self, event):
         self.log.info("Node lost".format())
         node = event.node
@@ -63,7 +63,7 @@ class MininetWiFiController(wishful_module.ControllerModule):
             self.log.info("Node: {}, removed reason: {}"
                           .format(node.uuid, reason))
 
-    @wishful_module.on_event(PeriodicTimeEvent)
+    @modules.on_event(PeriodicTimeEvent)
     def periodic_tx_stats(self, event):
 
         self.log.info("Periodic getting tx stats")

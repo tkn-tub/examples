@@ -1,4 +1,4 @@
-## WiSHFUL Agent config file
+## UniFlex Agent config file
 
 agent_config:
   name: 'local_GW_control_progs'
@@ -8,10 +8,10 @@ agent_config:
 
 modules:
   discovery:
-      module : wishful_module_discovery_pyre
+      module : uniflex_module_discovery_pyre
       class_name : PyreDiscoveryAgentModule
-      kwargs: {"iface":"lo", "groupName":"wishful_1234"}
+      kwargs: {"iface":"lo", "groupName":"uniflex_1234"}
 
   netlinux:
-      module : wishful_module_net_linux
+      module : uniflex_module_net_linux
       class_name : NetworkModule

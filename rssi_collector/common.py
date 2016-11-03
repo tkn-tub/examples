@@ -1,4 +1,4 @@
-from wishful_agent.core import events
+from uniflex.core import events
 
 __author__ = "Piotr Gawlowicz"
 __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"

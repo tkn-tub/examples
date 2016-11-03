@@ -1,9 +1,9 @@
 import logging
 import datetime
 import random
-from wishful_agent.core import wishful_module
-from wishful_agent.core import events
-from wishful_agent.timer import TimerEventSender
+from uniflex.core import modules
+from uniflex.core import events
+from uniflex.timer import TimerEventSender
 
 
 __author__ = "Piotr Gawlowicz"
@@ -17,8 +17,8 @@ class PeriodicEvaluationTimeEvent(events.TimeEvent):
         super().__init__()
 
 
-@wishful_module.build_module
-class MyController(wishful_module.ControllerModule):
+@modules.build_module
+class MyController(modules.ControllerModule):
     def __init__(self):
         super(MyController, self).__init__()
         self.log = logging.getLogger('MyController')
@@ -29,7 +29,7 @@ class MyController(wishful_module.ControllerModule):
         self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
         self.timer.start(self.timeInterval)
 
-    @wishful_module.on_start()
+    @modules.on_start()
     def my_start_function(self):
         print("start control app")
         self.running = True
@@ -67,12 +67,12 @@ class MyController(wishful_module.ControllerModule):
         ifaces = device.radio.get_interfaces()
         print(ifaces)
 
-    @wishful_module.on_exit()
+    @modules.on_exit()
     def my_stop_function(self):
         print("stop control app")
         self.running = False
 
-    @wishful_module.on_event(PeriodicEvaluationTimeEvent)
+    @modules.on_event(PeriodicEvaluationTimeEvent)
     def periodic_evaluation(self, event):
         # go over collected samples, etc....
         # make some decisions, etc...

@@ -1,4 +1,4 @@
-## WiSHFUL Agent config file
+## UniFlex Agent config file
 
 agent_config:
   name: "Global_Controller"
@@ -20,10 +20,10 @@ controllers:
 
 modules:
   discovery:
-        module : wishful_module_discovery_pyre
+        module : uniflex_app_discovery_pyre
         class_name : PyreDiscoveryControllerModule
         kwargs: {"iface":"lo",
-                 "groupName":"wishful_1234",
+                 "groupName":"uniflex_1234",
                  "sub":"tcp://127.0.0.1:8990",
                  "pub":"tcp://127.0.0.1:8989"
                 }
