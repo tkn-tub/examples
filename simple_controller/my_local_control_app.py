@@ -4,7 +4,7 @@ import random
 import wishful_upis as upis
 from uniflex.core import modules
 from uniflex.core import events
-from uniflex.timer import TimerEventSender
+from uniflex.core.timer import TimerEventSender
 from common import AveragedSpectrumScanSampleEvent
 from common import StartMyFilterEvent
 from common import StopMyFilterEvent

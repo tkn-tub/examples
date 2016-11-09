@@ -4,7 +4,7 @@ import random
 import wishful_upis as upis
 from uniflex.core import modules
 from uniflex.core import events
-from uniflex.timer import TimerEventSender
+from uniflex.core.timer import TimerEventSender
 from common import AveragedSpectrumScanSampleEvent
 from common import ChangeWindowSizeEvent
 
@@ -63,8 +63,8 @@ class MyController(modules.Application):
             print(app)
 
         device = node.get_device(0)
-        device.radio.set_tx_power(15, "wlan0")
-        device.radio.set_channel(random.randint(1, 11), "wlan0")
+        device.set_tx_power(15, "wlan0")
+        device.set_channel(random.randint(1, 11), "wlan0")
         device.enable_event(upis.radio.PacketLossEvent)
         self.packetLossEventsEnabled = True
         device.start_service(
@@ -146,27 +146,27 @@ class MyController(modules.Application):
             avgFilterApp.send_event(event)
 
         # execute non-blocking function immediately
-        device.blocking(False).radio.set_tx_power(random.randint(1, 20), "wlan0")
+        device.blocking(False).set_tx_power(random.randint(1, 20), "wlan0")
 
         # execute non-blocking function immediately, with specific callback
-        device.callback(self.get_power_cb).radio.get_tx_power("wlan0")
+        device.callback(self.get_power_cb).get_tx_power("wlan0")
 
         # schedule non-blocking function delay
-        device.delay(3).callback(self.default_cb).radio.get_tx_power("wlan0")
+        device.delay(3).callback(self.default_cb).get_tx_power("wlan0")
 
         # schedule non-blocking function exec time
         exec_time = datetime.datetime.now() + datetime.timedelta(seconds=3)
         newChannel = random.randint(1, 11)
-        device.exec_time(exec_time).radio.set_channel(newChannel, "wlan0")
+        device.exec_time(exec_time).set_channel(newChannel, "wlan0")
 
         # execute blocking function immediately
-        result = device.radio.get_channel("wlan0")
+        result = device.get_channel("wlan0")
         print("{} Channel is: {}".format(datetime.datetime.now(), result))
 
         # exception handling, clean_per_flow_tx_power_table implementation
         # raises exception
         try:
-            device.radio.clean_per_flow_tx_power_table("wlan0")
+            device.clean_per_flow_tx_power_table("wlan0")
         except Exception as e:
             print("{} !!!Exception!!!: {}".format(
                 datetime.datetime.now(), e))
