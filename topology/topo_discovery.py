@@ -21,8 +21,7 @@ Simple control program for topology discovery.
 '''
 
 
-@modules.build_module
-class WiFiTopologyController(modules.ControllerModule):
+class WiFiTopologyController(modules.ControlApplication):
     def __init__(self, mode, ap_iface):
         super(WiFiTopologyController, self).__init__()
         self.log = logging.getLogger('WiFiTopologyController')
@@ -76,7 +75,8 @@ class WiFiTopologyController(modules.ControllerModule):
 
         try:
             for sta_mac_addr_tmp in self.active_sta_mac_addrs:
-                ho_event = upis.wifi.WiFiGetServingAPRequestEvent(sta_mac_addr_tmp, self.ap_iface)
+                ho_event = upis.wifi.WiFiGetServingAPRequestEvent(
+                    sta_mac_addr_tmp, self.ap_iface)
                 self.log.info("... send event for %s " % sta_mac_addr_tmp)
                 self.send_event(ho_event)
 
@@ -90,4 +90,6 @@ class WiFiTopologyController(modules.ControllerModule):
         if event.ap_uuid in self.nodes:
             node = self.nodes[event.ap_uuid]
 
-        self.log.info("RX WiFiGetServingAPReplyEvent: %s, %s, %s, %s" % (event.sta_mac_addr, event.wifi_intf, event.ap_uuid, node.hostname))
+        self.log.info("RX WiFiGetServingAPReplyEvent: {}, {}, {}, {}"
+                      .format(event.sta_mac_addr, event.wifi_intf,
+                              event.ap_uuid, node.hostname))

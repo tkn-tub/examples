@@ -17,18 +17,23 @@ __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
 __version__ = "0.1.0"
 __email__ = "{zubow}@tkn.tu-berlin.de"
 
+
 class PeriodicSTADiscoveryTimeEvent(events.TimeEvent):
     def __init__(self):
         super().__init__()
 
+
 '''
 Set of control programs to be executed on central node, e.g. server:
-(1) BigAP controller - makes handover decisions based on the CQI reports of the APs. Gets information about new clients from DHCP.
-(2) DHCPDaemon - wraps DHCP server and informs BigAP controller about new and removed leases.
+(1) BigAP controller - makes handover decisions based on the CQI
+                       reports of the APs. Gets information about
+                       new clients from DHCP.
+(2) DHCPDaemon - wraps DHCP server and informs BigAP controller
+                 about new and removed leases.
 '''
 
-@modules.build_module
-class BigAPController(modules.ControllerModule):
+
+class BigAPController(modules.ControlApplication):
     def __init__(self, mode, ap_iface):
         super(BigAPController, self).__init__()
         self.log = logging.getLogger('BigAPController')
@@ -37,9 +42,9 @@ class BigAPController(modules.ControllerModule):
         self.sta_discovery_interval = 5
 
         self.running = False
-        self.activeSTAs = {} # MAC_ADDR -> IP_ADDR
-        self.nodes = {} # APs UUID -> node
-        self.servingAPs = {} # STA_MAC_ADDR -> AP node
+        self.activeSTAs = {}  # MAC_ADDR -> IP_ADDR
+        self.nodes = {}  # APs UUID -> node
+        self.servingAPs = {}  # STA_MAC_ADDR -> AP node
 
     @modules.on_start()
     def my_start_function(self):
@@ -71,7 +76,6 @@ class BigAPController(modules.ControllerModule):
         for dev in devs:
             self.log.info("Dev: ", dev.name)
 
-
     @modules.on_event(events.NodeExitEvent)
     @modules.on_event(events.NodeLostEvent)
     def remove_node(self, event):
@@ -83,11 +87,9 @@ class BigAPController(modules.ControllerModule):
             self.log.info("Node: {}, Local: {} removed reason: {}"
                           .format(node.uuid, node.local, reason))
 
-
     @modules.on_event(PeriodicSTADiscoveryTimeEvent)
     def periodic_sta_discovery(self, event):
-
-        if self.node == None:
+        if self.node is None:
             return
 
         self.log.debug("Periodic STA discovery")
@@ -102,8 +104,6 @@ class BigAPController(modules.ControllerModule):
         except Exception as e:
             self.log.error("{} !!!Exception!!!: {}".format(
                 datetime.datetime.now(), e))
-
-
 
     @modules.on_event(CQIReportingEvent)
     def serve_cqi_report_event(self, event):
@@ -124,7 +124,6 @@ class BigAPController(modules.ControllerModule):
             print('tbd')
             pass
 
-
     @modules.on_event(DHCPNewEvent)
     def serve_dhcp_new_event(self, event):
         '''
@@ -142,7 +141,6 @@ class BigAPController(modules.ControllerModule):
             # already known
             pass
 
-
     @modules.on_event(DHCPDelEvent)
     def serve_dhcp_del_event(self, event):
         '''
@@ -153,7 +151,6 @@ class BigAPController(modules.ControllerModule):
         self.log.info("DHCPNewEvent DEL: {}"
                       .format(event.ip_addr))
 
-
         if event.mac_addr in self.activeSTAs:
             # new STA to be served
             del self.activeSTAs[event.mac_addr]
@@ -161,10 +158,10 @@ class BigAPController(modules.ControllerModule):
             # unknown STA
             pass
 
-
     def send_servingAP_req(self, sta_mac_addr, iface):
         '''
-            Functions send out a message to wireless topology app to discover the AP serving a particular client.
+            Functions send out a message to wireless topology
+            app to discover the AP serving a particular client.
         '''
         try:
             self.log.debug('send_servingAP_req')
@@ -195,7 +192,8 @@ class BigAPController(modules.ControllerModule):
 
     def trigger_handover(self, sta_mac_addr, serving_AP, target_AP):
         '''
-            Functions triggers handover by sending a WiFiTriggerHandoverRequestEvent to the corresponding app.
+            Functions triggers handover by sending
+            a WiFiTriggerHandoverRequestEvent to the corresponding app.
         '''
         try:
             self.log.debug('performHO: tbd!!!')
@@ -205,7 +203,6 @@ class BigAPController(modules.ControllerModule):
         except Exception as e:
             self.log.fatal("... An error occurred : %s" % e)
             raise e
-
 
     @modules.on_event(upis.net_func.TriggerHandoverReplyEvent)
     def handle_handover_reply(self, event):
@@ -217,19 +214,18 @@ class BigAPController(modules.ControllerModule):
         else:
             self.log.info('Handover done')
 
-"""
-    DHCP daemon which sends events used for STA client discovery
-"""
-@modules.build_module
-class DHCPDaemon(modules.ControllerModule):
+
+class DHCPDaemon(modules.ControlApplication):
+    """
+        DHCP daemon which sends events used for STA client discovery
+    """
     def __init__(self, mode, zmq_port):
         super(DHCPDaemon, self).__init__()
         self.log = logging.getLogger('DHCPDaemon')
         self.mode = mode
         self.zmq_port = zmq_port
-        #self.activeSTAs = {}
+        # self.activeSTAs = {}
         self.running = False
-
 
     @modules.on_start()
     def my_start_function(self):

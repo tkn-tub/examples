@@ -17,8 +17,7 @@ class PeriodicEvaluationTimeEvent(events.TimeEvent):
         super().__init__()
 
 
-@modules.build_module
-class MyController(modules.ControllerModule):
+class MyController(modules.ControlApplication):
     def __init__(self):
         super(MyController, self).__init__()
         self.log = logging.getLogger('MyController')
@@ -59,9 +58,9 @@ class MyController(modules.ControllerModule):
         print(ifaces)
 
         device.radio.set_interface_up(newIface)
-        #print(device.radio.is_interface_up(newIface))
-        #device.radio.set_interface_down(newIface)
-        #print(device.radio.is_interface_up(newIface))
+        # print(device.radio.is_interface_up(newIface))
+        # device.radio.set_interface_down(newIface)
+        # print(device.radio.is_interface_up(newIface))
 
         device.radio.del_interface(newIface)
         ifaces = device.radio.get_interfaces()

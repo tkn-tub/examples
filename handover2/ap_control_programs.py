@@ -39,8 +39,7 @@ class PeriodicCQIReportingTimeEvent(events.TimeEvent):
 """
 
 
-@modules.build_module
-class Scanner(modules.ControllerModule):
+class Scanner(modules.ControlApplication):
     def __init__(self, mode, ap_iface, scan_iface, channels,
                  hopping_interval, reporting_interval):
         super(Scanner, self).__init__()

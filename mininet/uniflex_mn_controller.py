@@ -21,8 +21,7 @@ Simple control program for testing mininet functionality.
 '''
 
 
-@modules.build_module
-class MininetWiFiController(modules.ControllerModule):
+class MininetWiFiController(modules.ControlApplication):
     def __init__(self):
         super(MininetWiFiController, self).__init__()
         self.log = logging.getLogger('MininetWiFiController')

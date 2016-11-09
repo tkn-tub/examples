@@ -11,8 +11,7 @@ __version__ = "0.1.0"
 __email__ = "{gawlowicz}@tkn.tu-berlin.de"
 
 
-@modules.build_module
-class MyAvgFilter(modules.ControllerModule):
+class MyAvgFilter(modules.ControlApplication):
     def __init__(self, window):
         super(MyAvgFilter, self).__init__()
         self.log = logging.getLogger('MyAvgFilter')

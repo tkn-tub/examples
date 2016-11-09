@@ -12,8 +12,8 @@ __email__ = "{zubow}@tkn.tu-berlin.de"
 Local test of WiFi ATH component.
 '''
 
-@modules.build_module
-class HybridMACLocalController(modules.ControllerModule):
+
+class HybridMACLocalController(modules.ControlApplication):
     def __init__(self):
         super(HybridMACLocalController, self).__init__()
         self.log = logging.getLogger('HybridMACLocalController')
@@ -32,10 +32,13 @@ class HybridMACLocalController(modules.ControllerModule):
             total_slots = 10
             # slots are in microseonds
             slot_duration = 20000
-            dstHWAddr = "04:f0:21:17:36:68"  # node on which scheme should be applied, e.g. nuc15 interface sta1
+            # node on which scheme should be applied, e.g. nuc15 interface sta1
+            dstHWAddr = "04:f0:21:17:36:68"
 
             # create new MAC for local node
-            mac = upis.wifi.HybridTDMACSMAMac(no_slots_in_superframe=total_slots, slot_duration_ns=slot_duration)
+            mac = upis.wifi.HybridTDMACSMAMac(
+                no_slots_in_superframe=total_slots,
+                slot_duration_ns=slot_duration)
 
             be_slots = [1, 2, 3, 4]
 
@@ -54,7 +57,8 @@ class HybridMACLocalController(modules.ControllerModule):
             device.radio.install_mac_processor(iface, mac)
 
         except Exception as e:
-            self.log.error("{} Failed with install_mac_processor, err_msg: {}".format(datetime.datetime.now(), e))
+            self.log.error("{} Failed with install_mac_processor, err_msg: {}"
+                           .format(datetime.datetime.now(), e))
             raise e
 
         self.log.info('... done')
