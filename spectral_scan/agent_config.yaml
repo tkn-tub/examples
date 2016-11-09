@@ -8,7 +8,7 @@ agent_info:
 modules:
   discovery:
       module : uniflex_module_discovery_pyre
-      class_name : PyreDiscoveryAgentModule
+      class_name : PyreDiscoverySlaveModule
       kwargs: {"iface":"eth0", "groupName":"uniflex_1234"}
 
   simple:

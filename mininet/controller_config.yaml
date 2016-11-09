@@ -22,7 +22,7 @@ controllers:
 modules:
   discovery:
         module : uniflex_module_discovery_pyre
-        class_name : PyreDiscoveryControllerModule
+        class_name : PyreDiscoveryMasterModule
         kwargs: {"iface":"ap1-eth1",
                  "groupName":"uniflex_1234",
                  "sub":"tcp://20.0.0.2:8990",

@@ -9,5 +9,5 @@ controller:
 modules:
     discovery:
         module : uniflex_module_discovery_pyre
-        class_name : PyreDiscoveryControllerModule
+        class_name : PyreDiscoveryMasterModule
         kwargs: {"iface":"em0", "groupName":"uniflex_1234", "downlink":"tcp://192.168.1.157:8990", "uplink":"tcp://192.168.1.157:8989"}

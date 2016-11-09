@@ -36,7 +36,7 @@ controllers:
 modules:
   discovery:
         module : uniflex_module_discovery_pyre
-        class_name : PyreDiscoveryControllerModule
+        class_name : PyreDiscoveryMasterModule
         kwargs: {"iface":"lo",
                  "groupName":"uniflex_1234",
                  "sub":"tcp://127.0.0.1:8990",

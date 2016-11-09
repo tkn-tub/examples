@@ -3,7 +3,6 @@
 agent_config:
   name: 'Local_Controller'
   info: 'CPs and modules on single node'
-  type: 'local'
   iface: 'en0'
 
 controllers:
@@ -21,7 +20,7 @@ controllers:
 modules:
   discovery:
       module : uniflex_app_discovery_pyre
-      class_name : PyreDiscoveryAgentModule
+      class_name : PyreDiscoverySlaveModule
       kwargs: {"iface":"lo", "groupName":"uniflex_1234"}
 
   simple:

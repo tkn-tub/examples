@@ -20,8 +20,7 @@ class PeriodicEvaluationTimeEvent(events.TimeEvent):
         super().__init__()
 
 
-@modules.build_module
-class MyController(modules.ControllerModule):
+class MyController(modules.ControlApplication):
     def __init__(self):
         super(MyController, self).__init__()
         self.log = logging.getLogger('MyController')

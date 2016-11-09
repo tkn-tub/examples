@@ -3,7 +3,6 @@
 agent_config:
   name: 'HC node'
   info: 'filter runs on local node'
-  type: 'slave'
   iface: 'lo'
 
 controllers:
@@ -15,7 +14,7 @@ controllers:
 modules:
   discovery:
       module : uniflex_app_discovery_pyre
-      class_name : PyreDiscoveryAgentModule
+      class_name : PyreDiscoverySlaveModule
       kwargs: {"iface":"lo", "groupName":"uniflex_1234"}
 
   simple:
