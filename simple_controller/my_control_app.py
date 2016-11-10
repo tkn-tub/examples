@@ -66,8 +66,7 @@ class MyController(modules.ControlApplication):
         device.set_channel(random.randint(1, 11), "wlan0")
         device.enable_event(upis.radio.PacketLossEvent)
         self.packetLossEventsEnabled = True
-        device.start_service(
-            upis.radio.SpectralScanService(rate=1000, f_range=[2200, 2500]))
+        device.spectral_scan_start()
 
     @modules.on_event(events.NodeExitEvent)
     @modules.on_event(events.NodeLostEvent)

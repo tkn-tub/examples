@@ -1,6 +1,6 @@
 import logging
-import wishful_upis as upis
 from uniflex.core import modules
+from sbi.radio_device.events import SpectralScanSampleEvent
 from common import AveragedSpectrumScanSampleEvent
 from common import ChangeWindowSizeEvent
 
@@ -22,7 +22,7 @@ class MyAvgFilter(modules.ControlApplication):
         self.log.info("New window size: {}".format(event.window))
         self.window = event.window
 
-    @modules.on_event(upis.radio.SpectralScanSampleEvent)
+    @modules.on_event(SpectralScanSampleEvent)
     def serve_spectral_scan_sample(self, event):
         sample = event.sample
         node = event.node
