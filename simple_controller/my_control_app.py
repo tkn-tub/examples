@@ -138,7 +138,7 @@ class MyController(modules.ControlApplication):
                 avgFilterApp = app
                 break
 
-        if avgFilterApp.is_enabled():
+        if avgFilterApp.is_running():
             avgFilterApp.stop()
         else:
             avgFilterApp.start()
