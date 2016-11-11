@@ -65,8 +65,7 @@ class MyController(modules.ControlApplication):
         device = node.get_device(0)
         device.set_tx_power(15, "wlan0")
         device.set_channel(random.randint(1, 11), "wlan0")
-        device.enable_event(PacketLossEvent)
-        self.packetLossEventsEnabled = True
+        device.packet_loss_monitor_start()
         device.spectral_scan_start()
         # device.play_waveform()
         # TODO: is_implemented()
@@ -126,14 +125,12 @@ class MyController(modules.ControlApplication):
         node = self.get_node(0)
         device = node.get_device(0)
 
-        if self.packetLossEventsEnabled:
-            device.disable_event(PacketLossEvent)
+        if device.is_packet_loss_monitor_running():
+            device.packet_loss_monitor_stop()
             device.spectral_scan_stop()
-            self.packetLossEventsEnabled = False
         else:
-            device.enable_event(PacketLossEvent)
+            device.packet_loss_monitor_start()
             device.spectral_scan_start()
-            self.packetLossEventsEnabled = True
 
         avgFilterApp = None
         for app in node.get_apps():
