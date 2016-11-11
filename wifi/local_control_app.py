@@ -43,7 +43,7 @@ class MyController(modules.ControlApplication):
         for m in node.get_modules():
             print("Module: ", m.name)
 
-        for apps in node.get_apps():
+        for apps in node.get_control_applications():
             print("App: ", m.name)
 
         device = node.get_device(0)

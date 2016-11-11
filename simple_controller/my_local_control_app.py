@@ -51,7 +51,7 @@ class MyController(modules.ControlApplication):
             print("Module: ", m.name)
             print(m)
 
-        for app in node.get_apps():
+        for app in node.get_control_applications():
             print("App: ", app.name)
             print(app)
 
