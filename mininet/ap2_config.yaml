@@ -1,9 +1,8 @@
 ## UniFlex Agent config file
 
-agent_config:
+config:
   name: 'AP2'
   info: 'config for agent running on AP'
-  type: 'slave'
   iface: 'ap2-eth1'
 
 modules:

@@ -1,9 +1,8 @@
 ## UniFlex Agent config file
 
-agent_config:
+config:
   name: 'local_AP_control_progs'
   info: 'Local WiFi agent'
-  type: 'slave'
   iface: 'lo'
 
 modules:

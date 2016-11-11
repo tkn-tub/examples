@@ -1,12 +1,11 @@
 ## UniFlex Agent config file
 
-agent_config:
+config:
   name: 'Local_WiFi_Controller'
   info: 'CPs and modules on single node'
-  type: 'local'
   iface: 'lo'
 
-controllers:
+control_applications:
   myController:
       file : local_control_app.py
       class_name : MyController

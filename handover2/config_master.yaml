@@ -1,9 +1,8 @@
 ## UniFlex Agent config file of the BigAP controller
 
-agent_config:
+config:
   name: "BigAP_Controller"
   info: 'global BIGAP controller'
-  type: 'master'
   iface: 'lo'
   sub: "tcp://127.0.0.1:8990"
   pub: "tcp://127.0.0.1:8989"
@@ -12,7 +11,7 @@ broker:
   xpub: "tcp://127.0.0.1:8990"
   xsub: "tcp://127.0.0.1:8989"
 
-controllers:
+control_applications:
   bigApController:
       file : bigap_control_program.py
       class_name : BigAPController

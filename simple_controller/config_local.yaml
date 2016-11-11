@@ -1,11 +1,11 @@
 ## UniFlex Agent config file
 
-agent_config:
+config:
   name: 'Local_Controller'
   info: 'CPs and modules on single node'
   iface: 'lo'
 
-controllers:
+control_applications:
   myController:
       file : my_local_control_app.py
       class_name : MyController

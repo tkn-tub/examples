@@ -1,12 +1,11 @@
 ## UniFlex Agent config file
 
-agent_config:
+config:
   name: 'Local_Controller'
   info: 'local controller example for testing hybrid MAC from wifi ath module'
-  type: 'local'
   iface: 'lo'
 
-controllers:
+control_applications:
   myController:
       file : local_hmax_ex.py
       class_name : HybridMACLocalController

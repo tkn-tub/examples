@@ -1,12 +1,11 @@
 ## UniFlex Agent config file
 
-agent_config:
+config:
   name: 'HC node'
   info: 'filter runs on local node'
-  type: 'slave'
   iface: 'lo'
 
-controllers:
+control_applications:
   myFilter:
       file : my_filter.py
       class_name : MyAvgFilter

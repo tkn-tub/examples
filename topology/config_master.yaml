@@ -1,9 +1,8 @@
 ## UniFlex Agent config file for the topology controller
 
-agent_config:
+config:
   name: "Topology_Controller"
   info: 'global topology controller'
-  type: 'master'
   iface: 'lo'
   sub: "tcp://127.0.0.1:8990"
   pub: "tcp://127.0.0.1:8989"
@@ -12,7 +11,7 @@ broker:
   xpub: "tcp://127.0.0.1:8990"
   xsub: "tcp://127.0.0.1:8989"
 
-controllers:
+control_applications:
   topo_controller:
       file : topo_discovery.py
       class_name : WiFiTopologyController

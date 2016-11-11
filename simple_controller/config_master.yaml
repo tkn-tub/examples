@@ -1,6 +1,6 @@
 ## UniFlex Agent config file
 
-agent_config:
+config:
   name: "Global_Controller"
   info: 'agent hosts global controller'
   iface: 'lo'
@@ -11,7 +11,7 @@ broker:
   xpub: "tcp://127.0.0.1:8990"
   xsub: "tcp://127.0.0.1:8989"
 
-controllers:
+control_applications:
   myController:
       file : my_control_app.py
       class_name : MyController
