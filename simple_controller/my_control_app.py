@@ -1,7 +1,8 @@
 import logging
 import datetime
 import random
-import wishful_upis as upis
+
+from sbi.radio_device.events import PacketLossEvent
 from uniflex.core import modules
 from uniflex.core import events
 from uniflex.core.timer import TimerEventSender
@@ -64,9 +65,11 @@ class MyController(modules.ControlApplication):
         device = node.get_device(0)
         device.set_tx_power(15, "wlan0")
         device.set_channel(random.randint(1, 11), "wlan0")
-        device.enable_event(upis.radio.PacketLossEvent)
+        device.enable_event(PacketLossEvent)
         self.packetLossEventsEnabled = True
         device.spectral_scan_start()
+        # device.play_waveform()
+        # TODO: is_implemented()
 
     @modules.on_event(events.NodeExitEvent)
     @modules.on_event(events.NodeLostEvent)
@@ -78,7 +81,7 @@ class MyController(modules.ControlApplication):
             self.log.info("Node: {}, Local: {} removed reason: {}"
                           .format(node.uuid, node.local, reason))
 
-    @modules.on_event(upis.radio.PacketLossEvent)
+    @modules.on_event(PacketLossEvent)
     def serve_packet_loss_event(self, event):
         node = event.node
         device = event.device
@@ -124,10 +127,12 @@ class MyController(modules.ControlApplication):
         device = node.get_device(0)
 
         if self.packetLossEventsEnabled:
-            device.disable_event(upis.radio.PacketLossEvent)
+            device.disable_event(PacketLossEvent)
+            device.spectral_scan_stop()
             self.packetLossEventsEnabled = False
         else:
-            device.enable_event(upis.radio.PacketLossEvent)
+            device.enable_event(PacketLossEvent)
+            device.spectral_scan_start()
             self.packetLossEventsEnabled = True
 
         avgFilterApp = None
