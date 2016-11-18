@@ -1,0 +1,17 @@
+## UniFlex Agent config file
+
+config:
+  name: 'Local_Net_Controller'
+  info: 'Local testing of NET functionality'
+  iface: 'lo'
+
+control_applications:
+  myController:
+      file : local_control_app.py
+      class_name : MyNetController
+      kwargs : {}
+
+modules:
+  netlinux:
+      module : uniflex_module_net_linux
+      class_name : NetworkModule
