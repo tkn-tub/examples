@@ -1,0 +1,19 @@
+## UniFlex Agent config file
+url: 
+
+config:
+  name: "Global_Controller"
+  info: 'agent hosts global controller'
+  iface: 'wlp2s0'
+  sub: "tcp://100.0.0.2:8990"
+  pub: "tcp://100.0.0.2:8989"
+
+broker:
+  xpub: "tcp://100.0.0.2:8990"
+  xsub: "tcp://100.0.0.2:8989"
+
+control_applications:
+  myController:
+      file : my_control_app.py
+      class_name : MyController
+      kwargs : {}
