@@ -4,7 +4,7 @@ import datetime
 import random
 from uniflex.core import modules
 from uniflex.core import events
-from uniflex.timer import TimerEventSender
+from uniflex.core.timer import TimerEventSender
 
 
 __author__ = "Anatolij Zubow"
@@ -53,7 +53,7 @@ class MyGnuRadioController(modules.ControlApplication):
             self.log.debug("Module: %s" % m.name)
 
         for apps in node.get_control_applications():
-            self.log.debug("App: %s" % m.name)
+            self.log.debug("App: %s" % apps.name)
 
         self.device = node.get_device(0)
 
