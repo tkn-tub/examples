@@ -1,0 +1,19 @@
+## UniFlex Agent config file
+
+config:
+  name: 'Local_GnuRadio_Controller'
+  info: 'Local UniFlex control program controlling network node running GnuRadio'
+  iface: 'lo'
+
+control_applications:
+  myController:
+      file : local_control_app.py
+      class_name : MyGnuRadioController
+      kwargs : {}
+
+modules:
+  gnuradio:
+      module : uniflex_module_gnuradio
+      class_name : GnuRadioModule
+      devices : ['uhd0']
+      kwargs: {"ctrl_socket_host":"localhost", "ctrl_socket_port":8080}
