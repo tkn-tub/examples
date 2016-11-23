@@ -79,34 +79,36 @@ class LocalRadioSlicer(modules.ControlApplication):
         print("Periodic slice adaptations ...")
 
         try:
-            # step 1: get information about client STAs being served
-            tx_bitrate_link = self.device.get_tx_bitrate_of_connected_devices(self.iface)
-            for sta_mac_addr, sta_speed in tx_bitrate_link.items():
-                sta_tx_bitrate_val = sta_speed[0] # e.g. 12
-                sta_tx_bitrate_unit = sta_speed[1] # e.g. Mbit/s
+            # TODO: enable me!!!
+            if False:
+                # step 1: get information about client STAs being served
+                tx_bitrate_link = self.device.get_tx_bitrate_of_connected_devices(self.iface)
+                for sta_mac_addr, sta_speed in tx_bitrate_link.items():
+                    sta_tx_bitrate_val = sta_speed[0] # e.g. 12
+                    sta_tx_bitrate_unit = sta_speed[1] # e.g. Mbit/s
 
+                    # TODO: sven do something ...
+                    # mac_addr -> (rate, unit)
+                    pass
+
+                # step 2: process link info & decide on new slice sizes
                 # TODO: sven do something ...
-                # mac_addr -> (rate, unit)
-                pass
-
-            # step 2: process link info & decide on new slice sizes
-            # TODO: sven do something ...
 
 
-            # step 3: update hMAC
+                # step 3: update hMAC
 
-            # TODO: adapt hMAC config
-            # assign access policies to each slot in superframe
-            for slot_nr in range(self.mac.getNumSlots()):
-                ac_slot = self.mac.getAccessPolicy(slot_nr)
-                ac_slot.disableAll()
-                # TODO: sven do something ...
-                # node on which scheme should be applied, e.g. nuc15 interface sta1
-                staDstHWAddr = "04:f0:21:17:36:68"
-                ac_slot.addDestMacAndTosValues(staDstHWAddr, 0)
+                # TODO: adapt hMAC config
+                # assign access policies to each slot in superframe
+                for slot_nr in range(self.mac.getNumSlots()):
+                    ac_slot = self.mac.getAccessPolicy(slot_nr)
+                    ac_slot.disableAll()
+                    # TODO: sven do something ...
+                    # node on which scheme should be applied, e.g. nuc15 interface sta1
+                    staDstHWAddr = "04:f0:21:17:36:68"
+                    ac_slot.addDestMacAndTosValues(staDstHWAddr, 0)
 
-            # update configuration in hMAC
-            self.device.update_mac_processor(self.iface, self.mac)
+                # update configuration in hMAC
+                self.device.update_mac_processor(self.iface, self.mac)
 
         except Exception as e:
             self.log.error("{} Failed updating mac processor, err_msg: {}"
