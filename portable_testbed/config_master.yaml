@@ -2,8 +2,8 @@
 url: 
 
 config:
-  name: "Global_Controller"
-  info: 'agent hosts global controller'
+  name: "Backbone Network Controller"
+  info: "Backbone Network Controller"
   iface: 'wlp2s0'
   sub: "tcp://100.0.0.2:8990"
   pub: "tcp://100.0.0.2:8989"
