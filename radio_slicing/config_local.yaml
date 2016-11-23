@@ -1,0 +1,18 @@
+## UniFlex Agent config file
+
+config:
+  name: 'RadioSlicer'
+  info: 'local controller program running on WiFi AP performing radio slicing (based on hMAC)'
+  iface: 'lo'
+
+control_applications:
+  myController:
+      file : local_radio_slicer.py
+      class_name : LocalRadioSlicer
+      kwargs : {}
+
+modules:
+  wifiath:
+      module : uniflex_module_wifi_ath
+      class_name : Ath9kModule
+      devices : ['phy0']

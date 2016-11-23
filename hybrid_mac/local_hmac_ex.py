@@ -1,6 +1,7 @@
 import logging
 import datetime
-import wishful_upis as upis
+
+from sbi.wifi.params import HMACConfigParam, HMACAccessPolicyParam
 from uniflex.core import modules
 
 __author__ = "Anatolij Zubow"
@@ -9,9 +10,12 @@ __version__ = "0.1.0"
 __email__ = "{zubow}@tkn.tu-berlin.de"
 
 '''
-Local test of WiFi ATH component.
-'''
+A local control program installing hMAC (TDMA) in Atheros based WiFi node.
 
+Req.:
+- supported Atheros wireless NIC
+- hMAC patched Linux kernel (see README)
+'''
 
 class HybridMACLocalController(modules.ControlApplication):
     def __init__(self):
@@ -20,23 +24,23 @@ class HybridMACLocalController(modules.ControlApplication):
 
     @modules.on_start()
     def my_start_function(self):
-        self.log.info("start wifi ath test")
+        self.log.info("start wifi ath hMAC test")
 
         try:
             node = self.localNode
             self.log.info(node)
-            device = node.get_device(0)
-            self.log.info(device)
+            self.device = node.get_device(0)
+            self.log.info(self.device)
 
-            iface = 'ap1'
+            self.iface = 'ap1'
             total_slots = 10
             # slots are in microseonds
-            slot_duration = 20000
+            slot_duration = 20000 # 20 ms
             # node on which scheme should be applied, e.g. nuc15 interface sta1
             dstHWAddr = "04:f0:21:17:36:68"
 
             # create new MAC for local node
-            mac = upis.wifi.HybridTDMACSMAMac(
+            self.mac = HMACConfigParam(
                 no_slots_in_superframe=total_slots,
                 slot_duration_ns=slot_duration)
 
@@ -45,16 +49,16 @@ class HybridMACLocalController(modules.ControlApplication):
             # assign access policies to each slot in superframe
             for slot_nr in range(total_slots):
                 if slot_nr in be_slots:
-                    acBE = upis.wifi.AccessPolicy()
+                    acBE = HMACAccessPolicyParam()
                     acBE.addDestMacAndTosValues(dstHWAddr, 0)
-                    mac.addAccessPolicy(slot_nr, acBE)
+                    self.mac.addAccessPolicy(slot_nr, acBE)
                 else:
-                    acGuard = upis.wifi.AccessPolicy()
+                    acGuard = HMACAccessPolicyParam()
                     acGuard.disableAll()  # guard slot
-                    mac.addAccessPolicy(slot_nr, acGuard)
+                    self.mac.addAccessPolicy(slot_nr, acGuard)
 
             # install configuration in MAC
-            device.radio.install_mac_processor(iface, mac)
+            self.device.install_mac_processor(self.iface, self.mac)
 
         except Exception as e:
             self.log.error("{} Failed with install_mac_processor, err_msg: {}"
@@ -66,3 +70,6 @@ class HybridMACLocalController(modules.ControlApplication):
     @modules.on_exit()
     def my_stop_function(self):
         self.log.info("stop wifi ath test")
+
+        # install configuration in MAC
+        self.device.uninstall_mac_processor(self.iface, self.mac)
