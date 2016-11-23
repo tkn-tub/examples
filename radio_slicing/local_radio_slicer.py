@@ -82,27 +82,28 @@ class LocalRadioSlicer(modules.ControlApplication):
             # step 1: get information about client STAs being served
             tx_bitrate_link = self.device.get_tx_bitrate_of_connected_devices(self.iface)
             for sta_mac_addr, sta_speed in tx_bitrate_link.items():
-                sta_tx_bitrate_val = sta_speed[0]
-                sta_tx_bitrate_unit = sta_speed[1]
+                sta_tx_bitrate_val = sta_speed[0] # e.g. 12
+                sta_tx_bitrate_unit = sta_speed[1] # e.g. Mbit/s
 
-                # do something ...
+                # TODO: sven do something ...
                 # mac_addr -> (rate, unit)
                 pass
 
             # step 2: process link info & decide on new slice sizes
+            # TODO: sven do something ...
 
 
             # step 3: update hMAC
-
-            # node on which scheme should be applied, e.g. nuc15 interface sta1
-            dstHWAddr = "04:f0:21:17:36:68"
 
             # TODO: adapt hMAC config
             # assign access policies to each slot in superframe
             for slot_nr in range(self.mac.getNumSlots()):
                 ac_slot = self.mac.getAccessPolicy(slot_nr)
                 ac_slot.disableAll()
-                ac_slot.addDestMacAndTosValues(dstHWAddr, 0)
+                # TODO: sven do something ...
+                # node on which scheme should be applied, e.g. nuc15 interface sta1
+                staDstHWAddr = "04:f0:21:17:36:68"
+                ac_slot.addDestMacAndTosValues(staDstHWAddr, 0)
 
             # update configuration in hMAC
             self.device.update_mac_processor(self.iface, self.mac)
