@@ -32,6 +32,7 @@ class HybridMACLocalController(modules.ControlApplication):
             self.device = node.get_device(0)
             self.log.info(self.device)
 
+            self.myHMACID = 'myHMACID'
             self.iface = 'ap1'
             total_slots = 10
             # slots are in microseonds
@@ -58,7 +59,7 @@ class HybridMACLocalController(modules.ControlApplication):
                     self.mac.addAccessPolicy(slot_nr, acGuard)
 
             # install configuration in MAC
-            self.device.install_mac_processor(self.iface, self.mac)
+            self.device.activate_radio_program(self.myHMACID, self.mac, self.iface)
 
         except Exception as e:
             self.log.error("{} Failed with install_mac_processor, err_msg: {}"
@@ -72,4 +73,4 @@ class HybridMACLocalController(modules.ControlApplication):
         self.log.info("stop wifi ath test")
 
         # install configuration in MAC
-        self.device.uninstall_mac_processor(self.iface, self.mac)
+        self.device.deactivate_radio_program(self.myHMACID)

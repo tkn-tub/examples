@@ -41,6 +41,8 @@ class LocalRadioSlicer(modules.ControlApplication):
         self.log.info(node)
         self.device = node.get_device(0)
         self.log.info(self.device)
+
+        self.myHMACID = 'RadioSlicerID'
         self.iface = 'ap1'
         total_slots = 10
         # slots are in microseonds
@@ -58,7 +60,7 @@ class LocalRadioSlicer(modules.ControlApplication):
                 self.mac.addAccessPolicy(slot_nr, acGuard)
 
         # install configuration in MAC
-        self.device.install_mac_processor(self.iface, self.mac)
+        self.device.activate_radio_program(self.myHMACID, self.mac, self.iface)
 
         self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
         self.timer.start(self.update_interval)
@@ -71,7 +73,7 @@ class LocalRadioSlicer(modules.ControlApplication):
         self.log.info("stop wifi radio slicer")
 
         # install configuration in MAC
-        self.device.uninstall_mac_processor(self.iface, self.mac)
+        self.device.deactivate_radio_program(self.myHMACID)
 
 
     @modules.on_event(PeriodicEvaluationTimeEvent)
@@ -108,7 +110,7 @@ class LocalRadioSlicer(modules.ControlApplication):
                     ac_slot.addDestMacAndTosValues(staDstHWAddr, 0)
 
                 # update configuration in hMAC
-                self.device.update_mac_processor(self.iface, self.mac)
+                self.device.update_radio_program(self.myHMACID, self.mac, self.iface)
 
         except Exception as e:
             self.log.error("{} Failed updating mac processor, err_msg: {}"
