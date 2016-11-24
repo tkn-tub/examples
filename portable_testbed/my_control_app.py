@@ -1,13 +1,10 @@
 import logging
-import datetime
-import random
 
 from sbi.radio_device.events import PacketLossEvent
 from uniflex.core import modules
 from uniflex.core import events
 from uniflex.core.timer import TimerEventSender
 from common import AveragedSpectrumScanSampleEvent
-from common import ChangeWindowSizeEvent
 
 __author__ = "Piotr Gawlowicz"
 __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"

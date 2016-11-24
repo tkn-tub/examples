@@ -1,8 +1,8 @@
 ## UniFlex Agent config file
 
 config:
-  name: 'HC node'
-  info: 'filter runs on local node'
+  name: 'Backbone Node Agent'
+  info: 'Backbone Node Agent'
   iface: 'wlp2s0'
   sub: "tcp://100.0.0.2:8990"
   pub: "tcp://100.0.0.2:8989"
@@ -13,18 +13,3 @@ control_applications:
       file : slave_control_app.py
       class_name : SlaveController
       kwargs : {}
-
-  myFilter:
-      file : my_filter.py
-      class_name : MyAvgFilter
-      kwargs : {"window": 5}
-
-modules:
-  simple:
-      module : uniflex_module_simple
-      class_name : SimpleModule2
-      devices : ['phy0']
-
-  iperf:
-      module : uniflex_module_iperf
-      class_name : IperfModule

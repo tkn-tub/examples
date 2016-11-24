@@ -1,8 +1,6 @@
 import logging
 import subprocess
-import netifaces as ni
 
-from sbi.radio_device.events import PacketLossEvent
 from uniflex.core import modules
 from uniflex.core import events
 from uniflex.core.timer import TimerEventSender
@@ -28,7 +26,8 @@ class SlaveController(modules.ControlApplication):
         self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
         self.timer.start(self.timeInterval)
 
-        self.dut_iface = None
+        self.dut_iface = "eno1"
+        self.bn_iface = "wlp2s0"
 
     def _run_command(self, command):
         sp = subprocess.Popen(command, stdout=subprocess.PIPE,
@@ -45,33 +44,22 @@ class SlaveController(modules.ControlApplication):
         return [sp.returncode, out.decode("utf-8"), err.decode("utf-8")]
 
     def _setup_l2_tunneling(self):
-        self.log.info("Create Linux Bridge and enable it")
-        self._run_command("brctl addbr br-vx")
-        self._run_command("ip link set br-vx up")
-
         self.log.info(
             "Create VXLAN (virtual) interface and add it to the Linux bridge")
         self._run_command(
-            "ip link add vxlan10 type vxlan id 10 group 224.10.10.10 ttl 10 dev wlp2s0")
+            "ip link add vxlan10 type vxlan id 10 group 224.10.10.10 ttl 10 dev " + self.bn_iface)
         self._run_command("ip link set vxlan10 up")
-        self._run_command("brctl addif br-vx vxlan10")
+        self._run_command("brctl addif br0 vxlan10")
 
         self.log.info("Set bigger MTU to fit packets from DUT nodes")
         self._run_command("ifconfig wlp2s0 mtu 1550")
         self._run_command("ifconfig vxlan10 mtu 1500")
 
-        self.log.info(
-            "Add the eth (connecting DUT) interface to the Linux bridge.")
-        self._run_command("brctl addif br-vx " + self.dut_iface)
-
     def _teardown_l2_tunneling(self):
         self.log.info("Destroy VXLAN (virtual) interface")
+        self._run_command("brctl delif br0 vxlan10")
         self._run_command("ip link set vxlan10 down")
         self._run_command("ip link delete vxlan10")
-
-        self.log.info("Destroy Linux Bridge and enable it")
-        self._run_command("ip link set br-vx down")
-        self._run_command("brctl delbr br-vx")
 
         self.log.info("Set default MTU on wireless iface")
         self._run_command("ifconfig wlp2s0 mtu 1500")
@@ -80,9 +68,6 @@ class SlaveController(modules.ControlApplication):
     def my_start_function(self):
         print("Start Control Application")
         self.running = True
-
-        interaces = [s for s in ni.interfaces() if "enx" in s]
-        self.dut_iface = interaces[0]
         self._setup_l2_tunneling()
 
     @modules.on_exit()
