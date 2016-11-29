@@ -4,6 +4,8 @@
     apt-get install libzmq5-dev
     sudo apt-get install build-essential
     sudo apt-get install nodejs
+    #sometimes needed:
+    #sudo apt install nodejs-legacy
     sudo apt-get install npm
     sudo npm install -g node-gyp
     sudo npm install -g --unsafe-perm node-red
