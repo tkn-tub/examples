@@ -1,9 +1,10 @@
 import logging
 import random
-import wishful_upis as upis
+
+from sbi.radio_device.events import PacketLossEvent
 from uniflex.core import modules
 from uniflex.core import events
-from uniflex.timer import TimerEventSender
+from uniflex.core.timer import TimerEventSender
 from common import AveragedSpectrumScanSampleEvent
 
 __author__ = "Piotr Gawlowicz"
@@ -23,14 +24,10 @@ class MyController(modules.ControlApplication):
         self.log = logging.getLogger('MyController')
         self.mode = mode
         self.running = False
-        self.nodes = []
 
         self.timeInterval = 10
         self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
         self.timer.start(self.timeInterval)
-
-        self.myFilterRunning = False
-        self.packetLossEventsEnabled = False
 
     @modules.on_start()
     def my_start_function(self):
@@ -46,24 +43,27 @@ class MyController(modules.ControlApplication):
     def add_node(self, event):
         node = event.node
 
-        if self.mode == "GLOBAL" and node.local:
-            return
-
         self.log.info("Added new node: {}, Local: {}"
                       .format(node.uuid, node.local))
-        self.nodes.append(node)
+        self._add_node(node)
 
-        devs = node.get_devices()
-        for dev in devs:
+        for dev in node.get_devices():
             print("Dev: ", dev.name)
+            print(dev)
+
+        for m in node.get_modules():
+            print("Module: ", m.name)
+            print(m)
+
+        for app in node.get_control_applications():
+            print("App: ", app.name)
+            print(app)
 
         device = node.get_device(0)
-        device.radio.set_tx_power(15, "wlan0")
-        device.radio.set_channel(random.randint(1, 11))
-        device.enable_event(upis.radio.PacketLossEvent)
-        self.packetLossEventsEnabled = True
-        device.start_service(
-            upis.radio.SpectralScanService(rate=1000, f_range=[2200, 2500]))
+        device.set_tx_power(15, "wlan0")
+        device.set_channel(random.randint(1, 11), "wlan0")
+        device.packet_loss_monitor_start()
+        device.spectral_scan_start()
 
     @modules.on_event(events.NodeExitEvent)
     @modules.on_event(events.NodeLostEvent)
@@ -71,17 +71,16 @@ class MyController(modules.ControlApplication):
         self.log.info("Node lost".format())
         node = event.node
         reason = event.reason
-        if node in self.nodes:
-            self.nodes.remove(node)
+        if self._remove_node(node):
             self.log.info("Node: {}, Local: {} removed reason: {}"
                           .format(node.uuid, node.local, reason))
 
-    @modules.on_event(upis.radio.PacketLossEvent)
+    @modules.on_event(PacketLossEvent)
     def serve_packet_loss_event(self, event):
         node = event.node
         device = event.device
         self.log.info("Packet loss in node {}, dev: {}"
-                      .format(node.uuid, device.name))
+                      .format(node.hostname, device.name))
 
     @modules.on_event(AveragedSpectrumScanSampleEvent)
     def serve_spectral_scan_sample(self, event):
@@ -94,8 +93,8 @@ class MyController(modules.ControlApplication):
         # go over collected samples, etc....
         # make some decisions, etc...
         print("Periodic Evaluation")
-        print("My nodes: ", [node.uuid for node in self.nodes])
+        print("My nodes: ", [node.hostname for node in self.get_nodes()])
         self.timer.start(self.timeInterval)
 
-        if len(self.nodes) == 0:
+        if len(self.get_nodes()) == 0:
             return

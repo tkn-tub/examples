@@ -1,8 +1,11 @@
 # Install node red:
-
-    curl -sL https://deb.nodesource.com/setup_0.10 | sudo -E bash -
-    sudo apt-get install -y nodejs
-    sudo apt-get install -y build-essential
+   
+    sudo apt-get update
+    apt-get install libzmq5-dev
+    sudo apt-get install build-essential
+    sudo apt-get install nodejs
+    sudo apt-get install npm
+    sudo npm install -g node-gyp
     sudo npm install -g --unsafe-perm node-red
 
 # Install additional nodes:
