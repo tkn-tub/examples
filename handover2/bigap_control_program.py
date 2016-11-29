@@ -1,6 +1,7 @@
 import logging
 import datetime
 import wishful_upis as upis
+from sbi.wifi.events import WiFiHandoverRequestEvent, WiFiGetServingAPRequestEvent, WiFiGetServingAPReplyEvent
 from uniflex.core import modules
 from uniflex.core import events
 from uniflex.timer import TimerEventSender
@@ -32,8 +33,11 @@ Set of control programs to be executed on central node, e.g. server:
                  about new and removed leases.
 '''
 
-
 class BigAPController(modules.ControlApplication):
+    """
+    BigAP controller - makes handover decisions based on the CQI reports of the APs.
+    Gets information about new clients from DHCP.
+    """
     def __init__(self, mode, ap_iface):
         super(BigAPController, self).__init__()
         self.log = logging.getLogger('BigAPController')
@@ -46,6 +50,7 @@ class BigAPController(modules.ControlApplication):
         self.nodes = {}  # APs UUID -> node
         self.servingAPs = {}  # STA_MAC_ADDR -> AP node
 
+
     @modules.on_start()
     def my_start_function(self):
         print("BiGAP control app started")
@@ -56,10 +61,12 @@ class BigAPController(modules.ControlApplication):
 
         self.running = True
 
+
     @modules.on_exit()
     def my_stop_function(self):
         print("BiGAP control app stopped")
         self.running = False
+
 
     @modules.on_event(events.NewNodeEvent)
     def add_node(self, event):
@@ -76,6 +83,7 @@ class BigAPController(modules.ControlApplication):
         for dev in devs:
             self.log.info("Dev: ", dev.name)
 
+
     @modules.on_event(events.NodeExitEvent)
     @modules.on_event(events.NodeLostEvent)
     def remove_node(self, event):
@@ -86,6 +94,7 @@ class BigAPController(modules.ControlApplication):
             del self.nodes[node.uuid]
             self.log.info("Node: {}, Local: {} removed reason: {}"
                           .format(node.uuid, node.local, reason))
+
 
     @modules.on_event(PeriodicSTADiscoveryTimeEvent)
     def periodic_sta_discovery(self, event):
@@ -104,6 +113,7 @@ class BigAPController(modules.ControlApplication):
         except Exception as e:
             self.log.error("{} !!!Exception!!!: {}".format(
                 datetime.datetime.now(), e))
+
 
     @modules.on_event(CQIReportingEvent)
     def serve_cqi_report_event(self, event):
@@ -124,6 +134,7 @@ class BigAPController(modules.ControlApplication):
             print('tbd')
             pass
 
+
     @modules.on_event(DHCPNewEvent)
     def serve_dhcp_new_event(self, event):
         '''
@@ -140,6 +151,7 @@ class BigAPController(modules.ControlApplication):
         else:
             # already known
             pass
+
 
     @modules.on_event(DHCPDelEvent)
     def serve_dhcp_del_event(self, event):
@@ -158,6 +170,7 @@ class BigAPController(modules.ControlApplication):
             # unknown STA
             pass
 
+
     def send_servingAP_req(self, sta_mac_addr, iface):
         '''
             Functions send out a message to wireless topology
@@ -166,13 +179,14 @@ class BigAPController(modules.ControlApplication):
         try:
             self.log.debug('send_servingAP_req')
 
-            ho_event = upis.wifi.WiFiGetServingAPRequestEvent(sta_mac_addr, iface)
+            ho_event = WiFiGetServingAPRequestEvent(sta_mac_addr, iface)
             self.send_event(ho_event)
         except Exception as e:
             self.log.fatal("... An error occurred : %s" % e)
             raise e
 
-    @modules.on_event(upis.wifi.WiFiGetServingAPReplyEvent)
+
+    @modules.on_event(WiFiGetServingAPReplyEvent)
     def rx_servingAP_reply(self, event):
         '''
             From wireless topology app.
@@ -190,19 +204,20 @@ class BigAPController(modules.ControlApplication):
         else:
             self.log.error('Unknown ap_uuids %s' % ap_uuids)
 
-    def trigger_handover(self, sta_mac_addr, serving_AP, target_AP):
+
+    def trigger_handover(self, sta_mac_addr, serving_AP, target_AP, gateway, **kwargs):
         '''
             Functions triggers handover by sending
             a WiFiTriggerHandoverRequestEvent to the corresponding app.
         '''
         try:
-            self.log.debug('performHO: tbd!!!')
-
-            ho_event = upis.wifi.WiFiTriggerHandoverRequestEvent()
+            self.log.debug('performHO: send event to HO app')
+            ho_event = WiFiHandoverRequestEvent(sta_mac_addr, serving_AP, target_AP, gateway, **kwargs)
             self.send_event(ho_event)
         except Exception as e:
             self.log.fatal("... An error occurred : %s" % e)
             raise e
+
 
     @modules.on_event(upis.net_func.TriggerHandoverReplyEvent)
     def handle_handover_reply(self, event):
