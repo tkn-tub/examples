@@ -19,7 +19,7 @@ control_applications:
 
 modules:
   discovery:
-        module : uniflex_module_discovery_pyre
+        module : uniflex_app_discovery_pyre
         class_name : PyreDiscoveryMasterModule
         kwargs: {"iface":"lo",
                  "groupName":"uniflex_1234",
