@@ -1,12 +1,14 @@
+import time
 import logging
 import datetime
+import subprocess
+
 from uniflex.core import modules
 from uniflex.core import events
-from uniflex.timer import TimerEventSender
-from common import CQIReportingEvent
+from uniflex.core.events import TimeEvent
+from uniflex.core.timer import TimerEventSender
 
-import subprocess
-import time
+from .common import CQIReportingEvent
 
 __author__ = "Anatolij Zubow"
 __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
@@ -14,17 +16,17 @@ __version__ = "0.1.0"
 __email__ = "{zubow}@tkn.tu-berlin.de"
 
 '''
-Set of control programs to be executed on each AP locally:
+Set of control programs to be executed at each AP locally:
 (1) Scanner for reporting handover opportunities
 '''
 
 
-class PeriodicChannelSwitchTimeEvent(events.TimeEvent):
+class PeriodicChannelSwitchTimeEvent(TimeEvent):
     def __init__(self):
         super().__init__()
 
 
-class PeriodicCQIReportingTimeEvent(events.TimeEvent):
+class PeriodicCQIReportingTimeEvent(TimeEvent):
     def __init__(self):
         super().__init__()
 
@@ -52,7 +54,7 @@ class Scanner(modules.ControlApplication):
         self.reporting_interval = reporting_interval
         self.sta_map_file = '/tmp/sta_map.dat'
         self.next_ch_id = 0
-        self.running = False
+
 
     @modules.on_start()
     def my_start_function(self):
@@ -75,14 +77,13 @@ class Scanner(modules.ControlApplication):
         self.reportingTimer = TimerEventSender(self, PeriodicCQIReportingTimeEvent)
         self.reportingTimer.start(self.reportingTimeInterval)
 
-        self.running = True
 
     @modules.on_exit()
     def my_stop_function(self):
         self.log.debug("stop scanner app")
         # stop scanner
         self.process.kill()
-        self.running = False
+
 
     @modules.on_event(PeriodicChannelSwitchTimeEvent)
     def periodic_channel_switch(self, event):
@@ -114,8 +115,9 @@ class Scanner(modules.ControlApplication):
 
         try:
             # read and create event
+            # CQI towards co-located client not being served
             candidate_sigpower = self.read_passive_scan_results()
-
+            # CQI towards served client
             curr_sigpower = self.get_avg_sigpower()
 
             event = CQIReportingEvent(candidate_sigpower, curr_sigpower)
@@ -127,12 +129,10 @@ class Scanner(modules.ControlApplication):
 
 
     def read_passive_scan_results(self):
-        '''
+        """
         Get the signal quality towards co-located clients being served by neighboring APs. STA_MAC_ADDR -> dBm
         Returns in dBm
-        -------
-
-        '''
+        """
         scan_results = open(self.sta_map_file, 'r')
         rv = {}
         for line in scan_results:
@@ -147,11 +147,10 @@ class Scanner(modules.ControlApplication):
 
 
     def get_avg_sigpower(self):
-        '''
+        """
         Get the signal quality of currently served/associated client stations. STA_MAC_ADDR -> dBm
         Returns in dBm
-        -------
-        '''
+        """
         rv = {}
         station_info = self.localNode.net.iface(self.ap_iface).get_info_of_connected_devices()
         if station_info is not None:
