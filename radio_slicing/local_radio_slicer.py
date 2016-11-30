@@ -158,8 +158,8 @@ class LocalRadioSlicer(modules.ControlApplication):
                 for slot_nr in range(0,int(total_used_slots)):
                     print("Processing primary slot nr: "+str(slot_nr))
                     #ac_slot = self.mac.getAccessPolicy(slot_nr)
+                    ac_slot = HMACAccessPolicyParam()
                     if slot_nr < total_used_slots_exclusive_primary:
-                        ac_slot = HMACAccessPolicyParam()
                         sta_number = 0
                         for sta_mac_addr in self.min_slots:
                             if check_exclusives[sta_number] < self.min_slots[sta_mac_addr]:
@@ -174,6 +174,8 @@ class LocalRadioSlicer(modules.ControlApplication):
                             if sta_mac_addr not in self.min_slots.keys():
                                 print("Adding mac "+str(sta_mac_addr))
                                 ac_slot.addDestMacAndTosValues(sta_mac_addr, 0)
+                    else:
+                        ac_slot.enableAll()
                     self.mac.addAccessPolicy(slot_nr, ac_slot)
                 #for slot_nr in range(int(total_used_slots), int(self.total_slots)):
                     # TODO Replace this with STAs of Guest Network
