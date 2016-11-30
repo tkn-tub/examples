@@ -45,8 +45,6 @@ class MyIperfController(modules.ControlApplication):
         for apps in node.get_control_applications():
             self.log.debug("App: %s" % apps.name)
 
-        self.device = node.get_device(0)
-
         # start iperf server
         iperfServerEvent = IperfServerRequestEvent()
         #iperfServerEvent.resultReportInterval = 1
@@ -66,16 +64,14 @@ class MyIperfController(modules.ControlApplication):
 
 
     @modules.on_event(PeriodicEvaluationTimeEvent)
-    def periodic_evaluation(self, event):
-        self.log.info("Periodic channel hopping ...")
+    def start_iperf_client(self, event):
+        self.log.info("Start iperf client ...")
 
         # start iperf server
         iperfClientEvent = IperfClientRequestEvent()
-        #iperfClientEvent.resultReportInterval = 1
-        #iperfClientEvent.stopAfterFirstReport = True
+        iperfClientEvent.resultReportInterval = 1
+        iperfClientEvent.stopAfterFirstReport = False
         iperfClientEvent.transmissionTime = 5
 
         self.log.info("Start iperf client ...")
         self.send_event(iperfClientEvent)
-
-        #self.timer.start(self.timeInterval)
