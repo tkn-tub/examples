@@ -13,7 +13,23 @@ broker:
   xsub: "tcp://127.0.0.1:8989"
 
 control_applications:
-  myController:
+  GuiFeeder:
       file : gui_feeder_app.py
       class_name : GuiFeeder
-      kwargs : {}
+      kwargs : {staList: [["TV", "00:15:6d:86:0f:84", "192.168.6.10"],
+                          ["Radio", "00:15:6d:84:3c:ec", "192.168.6.20"],
+                          ["Laptop", "00:15:6d:84:3c:ed", "192.168.6.30"],
+                          ["Guest1", "00:15:6d:84:3c:12", "192.168.7.10"],
+                          ["Guest2", "00:15:6d:84:3c:13", "192.168.7.20"]
+                          ]
+                }
+
+  Pinger:
+      file : pinger.py
+      class_name : Pinger
+      kwargs : { hostList: ["192.168.6.10",
+                            "192.168.6.20",
+                            "192.168.6.30",
+                            "192.168.7.10",
+                            "192.168.7.20"]
+                }
