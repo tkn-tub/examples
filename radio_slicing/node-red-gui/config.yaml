@@ -1,0 +1,19 @@
+## UniFlex Agent config file
+
+config:
+  name: "GuiFeeder"
+  info: 'Feeds data to Radio Slicer GUI in Node-RED'
+  iface: 'lo'
+  sub: "tcp://127.0.0.1:8990"
+  pub: "tcp://127.0.0.1:8989"
+
+#remove broker if already started
+broker:
+  xpub: "tcp://127.0.0.1:8990"
+  xsub: "tcp://127.0.0.1:8989"
+
+control_applications:
+  myController:
+      file : gui_feeder_app.py
+      class_name : GuiFeeder
+      kwargs : {}
