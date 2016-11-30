@@ -44,13 +44,17 @@ class LocalRadioSlicer(modules.ControlApplication):
         self.myHMACID = 'RadioSlicerID'
         self.iface = 'ap5'
         self.total_slots = 20
+        self.phy_to_data_factor = 0.8
         # slots are in microseonds
         slot_duration = 20000  # 20 ms
 
-        sta1 = "00:15:6d:86:0f:84" #fernseher
-        sta2 = '00:15:6d:84:3c:ec' #internet radio
-        self.min_rates = {sta1 : 2.0, sta2 : 0.5}
-        self.min_rate_home_devices = 1.0
+        sta1 = "00:15:6d:86:0f:84" #tv set, IP: 192.168.6.10
+        sta2 = '00:15:6d:84:3c:ec' #internet radio, IP: 192.168.6.20
+        sta3 = "00:15:6d:84:3c:ed" #Tablet PC with browser, IP 192.168.6.30
+        sta4 = "00:15:6d:84:3c:12" #Guest Smartphone 1, IP: 192.168.7.10
+        sta4 = "00:15:6d:84:3c:13" #Guest Smartphone 2, IP: 192.168.7.20
+        self.min_rates = {sta1 : 10.0, sta2 : 0.5}
+        self.min_rate_home_devices = 5.0
         self.phy_rates = {}
         self.min_slots = {}
 
