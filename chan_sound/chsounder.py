@@ -1,6 +1,6 @@
 import logging
 import datetime
-import time
+import datetime
 
 from uniflex.core import modules
 from uniflex.core import events
@@ -34,43 +34,41 @@ class ChannelSounderWiFiController(modules.ControlApplication):
     def my_start_function(self):
         self.log.info("start control app")
 
-        self.next_channel = 1
+        self.channel_lst = (1, 3, 6, 9, 11)
+        self.next_channel_idx = 1
         self.ifaceName = 'mon0'
         self.start = None
         self.hopping_interval = 1
 
-        self.timeInterval = 0.5
+        self.timeInterval = 1
         self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
         self.timer.start(self.timeInterval)
 
-    def schedule_ch_switch(self, node=None):
+    def schedule_ch_switch(self):
         try:
-            self.log.info('schedule_ch_switch')
             # schedule first channel switch in now + 3 seconds
-            if self.start == None:
-                self.start = time.time() + 3
-            else:
-                self.start = self.start + self.hopping_interval
+            #if self.start == None:
+            #    self.start = datetime.datetime.now() + datetime.timedelta(seconds=3)
+            #else:
+            #    self.start = self.start + datetime.timedelta(seconds=self.hopping_interval)
 
-            if node:
+            # new channel
+            self.next_channel_idx = (self.next_channel_idx + 1) % len(self.channel_lst)
+            nxt_channel = self.channel_lst[self.next_channel_idx]
+
+            self.log.info('schedule_ch_switch at %s to %d' % (str(self.start), nxt_channel))
+
+            for node in self.nodes.values():
                 device = node.get_device(0)
-                device.exec_time(self.start).callback(self.channel_set_cb).set_channel(self.next_channel, self.ifaceName)
-                #device.exec_time(self.start).callback(self.channel_set_cb).debug(self.next_channel)
-            else:
-                for node in self.nodes.values():
-                    device = node.get_device(0)
-                    device.exec_time(self.start).callback(self.channel_set_cb).set_channel(self.next_channel, self.ifaceName)
-                    #device.exec_time(self.start).callback(self.channel_set_cb).debug(self.next_channel)
+                #device.exec_time(self.start).callback(self.channel_set_cb).set_channel(nxt_channel, self.ifaceName)
+                device.callback(self.channel_set_cb).set_channel(nxt_channel, self.ifaceName)
 
         except Exception as e:
             self.log.error("{} !!!Exception!!!: {}".format(
                 datetime.datetime.now(), e))
 
     def channel_set_cb(self, data):
-        node = data.node
-
-        # schedule new ch switch
-        self.schedule_ch_switch(node)
+        pass
 
     @modules.on_exit()
     def my_stop_function(self):
@@ -86,7 +84,7 @@ class ChannelSounderWiFiController(modules.ControlApplication):
 
         devs = node.get_devices()
         for dev in devs:
-            self.log.info("Dev: ", dev.name)
+            self.log.info("Dev: %s" % str(dev.name))
 
     @modules.on_event(events.NodeExitEvent)
     @modules.on_event(events.NodeLostEvent)
@@ -103,8 +101,10 @@ class ChannelSounderWiFiController(modules.ControlApplication):
     @modules.on_event(PeriodicEvaluationTimeEvent)
     def periodic_evaluation(self, event):
         print("all node are available ...")
+        self.timer.start(self.timeInterval)
+
         if len(self.nodes) < self.num_nodes:
             # wait again
-            self.timer.start(self.timeInterval)
+            pass
         else:
             self.schedule_ch_switch()
