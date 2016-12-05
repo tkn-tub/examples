@@ -1,0 +1,15 @@
+## WiSHFUL Agent config file
+
+config:
+  name: 'local_wifi_device'
+  info: 'Just local device without control logic'
+  type: 'slave'
+  iface: 'lo'
+  sub: "tcp://127.0.0.1:8990"
+  pub: "tcp://127.0.0.1:8989"
+
+modules:
+  wifi:
+      module : uniflex_module_wifi_intel
+      class_name : Iwl5300Module
+      devices : ['phy0']

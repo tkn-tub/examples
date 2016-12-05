@@ -1,0 +1,20 @@
+## WiSHFUL Agent config file of the BigAP controller
+
+config:
+  name: "Channel_Sounder_Controller"
+  info: 'global channel sounder controller for WiFi'
+  type: 'master'
+  iface: 'lo'
+  sub: "tcp://127.0.0.1:8990"
+  pub: "tcp://127.0.0.1:8989"
+
+broker:
+  xpub: "tcp://127.0.0.1:8990"
+  xsub: "tcp://127.0.0.1:8989"
+
+control_applications:
+  chscontroller:
+      file : chsounder.py
+      class_name : ChannelSounderWiFiController
+      kwargs : {'num_nodes': 1}
+
