@@ -38,9 +38,10 @@ class ChannelSounderWiFiController(modules.ControlApplication):
         self.next_channel_idx = 1
         self.ifaceName = 'mon0'
         self.start = None
-        self.hopping_interval = 1
+        #self.hopping_interval = 3
+        self.margot_uuid = None
 
-        self.timeInterval = 1
+        self.timeInterval = 0.5
         self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
         self.timer.start(self.timeInterval)
 
@@ -61,14 +62,25 @@ class ChannelSounderWiFiController(modules.ControlApplication):
             for node in self.nodes.values():
                 device = node.get_device(0)
                 #device.exec_time(self.start).callback(self.channel_set_cb).set_channel(nxt_channel, self.ifaceName)
-                device.callback(self.channel_set_cb).set_channel(nxt_channel, self.ifaceName)
+                if node.uuid == self.margot_uuid:
+                    device.callback(self.channel_set_cb).set_channel(nxt_channel, self.ifaceName)
+                else:
+                    device.callback(self.channel_set_cb).set_channel(nxt_channel, 'wlan0')
 
         except Exception as e:
             self.log.error("{} !!!Exception!!!: {}".format(
                 datetime.datetime.now(), e))
 
     def channel_set_cb(self, data):
-        pass
+        node = data.node
+        device = node.get_device(0)
+        samples = 1
+        if node.uuid == self.margot_uuid:
+            pass
+        else:
+            #csi = device.get_csi(samples, False)
+            #self.log.info('csi %d' % len(csi))
+            pass
 
     @modules.on_exit()
     def my_stop_function(self):
@@ -85,6 +97,10 @@ class ChannelSounderWiFiController(modules.ControlApplication):
         devs = node.get_devices()
         for dev in devs:
             self.log.info("Dev: %s" % str(dev.name))
+            ifaces = dev.get_interfaces()
+            self.log.info('Ifaces %s' % ifaces)
+            if 'mon0' in ifaces:
+                self.margot_uuid = node.uuid
 
     @modules.on_event(events.NodeExitEvent)
     @modules.on_event(events.NodeLostEvent)

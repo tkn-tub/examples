@@ -16,5 +16,5 @@ control_applications:
   chscontroller:
       file : chsounder.py
       class_name : ChannelSounderWiFiController
-      kwargs : {'num_nodes': 1}
+      kwargs : {'num_nodes': 2}
 
