@@ -105,11 +105,18 @@ class MyController(modules.ControlApplication):
 
     def get_power_cb(self, data):
         node = data.node
-        dev = data.device
         msg = data.msg
+        dev = node.get_device(0)
         print("Power in "
               "Node: {}, Dev: {}, was set to: {}"
               .format(node.hostname, dev.name, msg))
+
+        newPwr = random.randint(1, 20)
+        dev.blocking(False).set_tx_power(newPwr, "wlan0")
+        print("Power in "
+              "Node: {}, Dev: {}, was set to: {}"
+              .format(node.hostname, dev.name, newPwr))
+
 
     @modules.on_event(PeriodicEvaluationTimeEvent)
     def periodic_evaluation(self, event):
