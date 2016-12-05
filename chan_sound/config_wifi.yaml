@@ -12,4 +12,4 @@ modules:
   wifi:
       module : uniflex_module_wifi_intel
       class_name : Iwl5300Module
-      devices : ['phy0']
+      devices : ['phy3']
