@@ -117,6 +117,13 @@ class MyController(modules.ControlApplication):
               "Node: {}, Dev: {}, was set to: {}"
               .format(node.hostname, dev.name, newPwr))
 
+    def scheduled_get_channel_cb(self, data):
+        node = data.node
+        msg = data.msg
+        dev = node.get_device(0)
+        print("Scheduled get_channel; Power in "
+              "Node: {}, Dev: {}, was set to: {}"
+              .format(node.hostname, dev.name, msg))
 
     @modules.on_event(PeriodicEvaluationTimeEvent)
     def periodic_evaluation(self, event):
@@ -165,6 +172,12 @@ class MyController(modules.ControlApplication):
         exec_time = datetime.datetime.now() + datetime.timedelta(seconds=3)
         newChannel = random.randint(1, 11)
         device.exec_time(exec_time).set_channel(newChannel, "wlan0")
+
+        # schedule execution of function multiple times
+        start_date = datetime.datetime.now() + datetime.timedelta(seconds=2)
+        interval = datetime.timedelta(seconds=1)
+        repetitionNum = 3
+        device.exec_time(start_date, interval, repetitionNum).callback(self.scheduled_get_channel_cb).get_channel("wlan0")
 
         # execute blocking function immediately
         result = device.get_channel("wlan0")
