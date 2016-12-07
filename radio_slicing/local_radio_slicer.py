@@ -43,18 +43,18 @@ class LocalRadioSlicer(modules.ControlApplication):
         self.log.info(self.device)
         self.myHMACID = 'RadioSlicerID'
         self.iface = 'ap5'
-        self.total_slots = 20
-        self.phy_to_data_factor = 0.8
+        self.total_slots = 30
+        self.phy_to_data_factor = 0.2
         # slots are in microseonds
-        slot_duration = 20000  # 20 ms
+        slot_duration = 1000  # 20 ms
 
         sta1 = "00:15:6d:86:0f:84" #tv set, IP: 192.168.6.10
         sta2 = '00:15:6d:84:3c:ec' #internet radio, IP: 192.168.6.20
-        sta3 = "00:15:6d:84:3c:ed" #Tablet PC with browser, IP 192.168.6.30
+        sta3 = "ec:1f:72:82:09:56" #Mobile Phone youtube, IP 192.168.6.30
         sta4 = "00:15:6d:84:3c:12" #Guest Smartphone 1, IP: 192.168.7.10
-        sta4 = "00:15:6d:84:3c:13" #Guest Smartphone 2, IP: 192.168.7.20
-        self.min_rates = {sta1 : 10.0, sta2 : 0.5}
-        self.min_rate_home_devices = 5.0
+        sta5 = "00:15:6d:84:3c:13" #Guest Smartphone 2, IP: 192.168.7.20
+        self.min_rates = {sta1 : 5.0, sta3 : 1.0}
+        self.min_rate_home_devices = 1.0
         self.phy_rates = {}
         self.min_slots = {}
 
@@ -120,13 +120,13 @@ class LocalRadioSlicer(modules.ControlApplication):
                         print("STA need to get explusive slice")
                         print("Policy Min Bitrate: "+str(self.min_rates[sta_mac_addr]))
                         number_of_slots = round(self.min_rates[sta_mac_addr] / slot_bitrate + 0.5)
-                        self.min_slots[sta_mac_addr]= number_of_slots
-                        primary_slots_exclusive = primary_slots_exclusive + number_of_slots
+                        self.min_slots[sta_mac_addr]= number_of_slots + 1 # plus 1 because of guard slots
+                        primary_slots_exclusive = primary_slots_exclusive + number_of_slots 
                         print("Min Slots needed for exclusive primary: "+str(self.min_slots[sta_mac_addr]))
                     else: #Primary STA will get standard slot with other non exclusive primaries but trying to get min Rate per Primary
                         print("STA gets slice with other primaries")
                         print("Standard Min Bitrate for non-exclusive primaries: "+str(self.min_rate_home_devices))
-                        number_of_slots = round(self.min_rate_home_devices / slot_bitrate + 0.5)
+                        number_of_slots = round(self.min_rate_home_devices / slot_bitrate + 0.5) + 1 # 1 for backup slots
                         print("Min Slots needed for non-exclusive primary: "+str(number_of_slots))
                         needed_slots_standard_primary = needed_slots_standard_primary + number_of_slots
                 # step 3: update hMAC
@@ -155,27 +155,40 @@ class LocalRadioSlicer(modules.ControlApplication):
                 total_used_slots_non_exclusive_primary = total_used_slots - total_used_slots_exclusive_primary
                 print("Total used slots for non-exclusive primaries: "+str(total_used_slots_non_exclusive_primary))
                 check_exclusives = [0] * len(self.min_slots)
-                for slot_nr in range(0,int(total_used_slots)):
-                    print("Processing primary slot nr: "+str(slot_nr))
+                for slot_nr in range(0,int(self.total_slots)):
+                    print("Processing slot nr: "+str(slot_nr))
                     #ac_slot = self.mac.getAccessPolicy(slot_nr)
                     ac_slot = HMACAccessPolicyParam()
-                    if slot_nr < total_used_slots_exclusive_primary:
+                    if slot_nr == 0:
+                        print("Guard between secondaries and primaries")
+                        ac_slot.disableAll()
+                    elif slot_nr < total_used_slots_exclusive_primary:
                         sta_number = 0
                         for sta_mac_addr in self.min_slots:
                             if check_exclusives[sta_number] < self.min_slots[sta_mac_addr]:
-                                print("Adding mac "+str(sta_mac_addr))
                                 ac_slot.addDestMacAndTosValues(sta_mac_addr, 0)
                                 check_exclusives[sta_number] = check_exclusives[sta_number] + 1
+                                if check_exclusives[sta_number] == self.min_slots[sta_mac_addr]:
+                                    ac_slot.disableAll()
+                                    print("Guard between primaries")
+                                else: 
+                                    print("Adding mac "+str(sta_mac_addr))
                                 break
                             sta_number = sta_number + 1
-
-                    elif slot_nr >= total_used_slots_exclusive_primary and slot_nr < total_used_slots:
+                            #ac_slot.addDestMacAndTosValues(sta_mac_addr, 0)
+                    #elif slot_nr == total_used_slots_exclusive_primary:
+                        #ac_slot.disableAll()
+                    elif slot_nr > total_used_slots_exclusive_primary and slot_nr < total_used_slots:
                         for sta_mac_addr in self.phy_rates:
                             if sta_mac_addr not in self.min_slots.keys():
                                 print("Adding mac "+str(sta_mac_addr))
                                 ac_slot.addDestMacAndTosValues(sta_mac_addr, 0)
+                    elif slot_nr == total_used_slots:
+                        ac_slot.disableAll()
+                        print("Guard after primaries")
                     else:
-                        ac_slot.enableAll()
+                        ac_slot.disableAll()
+                        print("Secondaries")
                     self.mac.addAccessPolicy(slot_nr, ac_slot)
                 #for slot_nr in range(int(total_used_slots), int(self.total_slots)):
                     # TODO Replace this with STAs of Guest Network
