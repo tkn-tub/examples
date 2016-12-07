@@ -108,3 +108,4 @@ class ChannelSounderWiFiController(modules.ControlApplication):
             pass
         else:
             self.schedule_ch_switch()
+

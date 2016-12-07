@@ -4,9 +4,9 @@ config:
   name: 'local_wifi_device'
   info: 'Just local device without control logic'
   type: 'slave'
-  iface: 'lo'
-  sub: "tcp://127.0.0.1:8990"
-  pub: "tcp://127.0.0.1:8989"
+  iface: 'eth0'
+  sub: "tcp://192.168.200.13:8990"
+  pub: "tcp://192.168.200.13:8989"
 
 modules:
   wifi:
