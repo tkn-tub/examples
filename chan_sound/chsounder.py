@@ -40,6 +40,9 @@ class ChannelSounderWiFiController(modules.ControlApplication):
         self.start = None
         self.hopping_interval = 1
 
+        # CSI stuff
+        self.results = []
+
         self.timeInterval = 1
         self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
         self.timer.start(self.timeInterval)
@@ -67,8 +70,19 @@ class ChannelSounderWiFiController(modules.ControlApplication):
             self.log.error("{} !!!Exception!!!: {}".format(
                 datetime.datetime.now(), e))
 
+
     def channel_set_cb(self, data):
-        pass
+        """
+        Callback function called when channel switching is done
+        """
+        node = data.node
+        device = node.get_device(0)
+        samples = 1
+        csi = device.get_csi(samples, False)
+
+        tuple = (self.channel_lst[self.next_channel_idx], node.uuid, csi)
+
+        self.results.append(tuple)
 
     @modules.on_exit()
     def my_stop_function(self):
