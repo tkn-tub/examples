@@ -41,14 +41,10 @@ class ChannelSounderWiFiController(modules.ControlApplication):
         #self.hopping_interval = 3
         self.margot_uuid = None
 
-<<<<<<< HEAD
         # CSI stuff
         self.results = []
 
         self.timeInterval = 1
-=======
-        self.timeInterval = 0.5
->>>>>>> 51c29b224e4de830208547cf66d61ae9926eb3eb
         self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
         self.timer.start(self.timeInterval)
 
@@ -80,7 +76,6 @@ class ChannelSounderWiFiController(modules.ControlApplication):
 
 
     def channel_set_cb(self, data):
-<<<<<<< HEAD
         """
         Callback function called when channel switching is done
         """
@@ -92,17 +87,6 @@ class ChannelSounderWiFiController(modules.ControlApplication):
         tuple = (self.channel_lst[self.next_channel_idx], node.uuid, csi)
 
         self.results.append(tuple)
-=======
-        node = data.node
-        device = node.get_device(0)
-        samples = 1
-        if node.uuid == self.margot_uuid:
-            pass
-        else:
-            #csi = device.get_csi(samples, False)
-            #self.log.info('csi %d' % len(csi))
-            pass
->>>>>>> 51c29b224e4de830208547cf66d61ae9926eb3eb
 
     @modules.on_exit()
     def my_stop_function(self):
