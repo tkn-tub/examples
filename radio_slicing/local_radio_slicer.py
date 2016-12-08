@@ -44,16 +44,16 @@ class LocalRadioSlicer(modules.ControlApplication):
         self.myHMACID = 'RadioSlicerID'
         self.iface = 'ap5'
         self.total_slots = 30
-        self.phy_to_data_factor = 0.2
+        self.phy_to_data_factor = 0.4
         # slots are in microseonds
-        slot_duration = 1000  # 20 ms
+        slot_duration = 10000  # 20 ms
 
         sta1 = "00:15:6d:86:0f:84" #tv set, IP: 192.168.6.10
-        sta2 = '00:15:6d:84:3c:ec' #internet radio, IP: 192.168.6.20
+        sta2 = '00:16:ea:5f:2a:03' #internet radio, IP: 192.168.6.20
         sta3 = "ec:1f:72:82:09:56" #Mobile Phone youtube, IP 192.168.6.30
         sta4 = "00:15:6d:84:3c:12" #Guest Smartphone 1, IP: 192.168.7.10
         sta5 = "00:15:6d:84:3c:13" #Guest Smartphone 2, IP: 192.168.7.20
-        self.min_rates = {sta1 : 5.0, sta3 : 1.0}
+        self.min_rates = {sta1 : 10.0, sta2 : 1.0}
         self.min_rate_home_devices = 1.0
         self.phy_rates = {}
         self.min_slots = {}
@@ -187,7 +187,8 @@ class LocalRadioSlicer(modules.ControlApplication):
                         ac_slot.disableAll()
                         print("Guard after primaries")
                     else:
-                        ac_slot.disableAll()
+                        #ac_slot.disableAll()
+                        ac_slot.allowAll()
                         print("Secondaries")
                     self.mac.addAccessPolicy(slot_nr, ac_slot)
                 #for slot_nr in range(int(total_used_slots), int(self.total_slots)):
