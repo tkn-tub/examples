@@ -78,7 +78,7 @@ class ChannelSounderWiFiController(modules.ControlApplication):
 
             for node in self.nodes.values():
                 device = node.get_device(0)
-                device.callback(self.channel_csi_cb).get_csi(samples, False)
+                device.callback(self.channel_csi_cb).get_csi(self.samples, False)
 
         except Exception as e:
             self.log.error("{} !!!Exception!!!: {}".format(
