@@ -4,13 +4,13 @@ config:
   name: "Channel_Sounder_Controller"
   info: 'global channel sounder controller for WiFi'
   type: 'master'
-  iface: 'eth1'
-  sub: "tcp://192.168.200.13:8990"
-  pub: "tcp://192.168.200.13:8989"
+  iface: 'eth0'
+  sub: "tcp://192.168.200.14:8990"
+  pub: "tcp://192.168.200.14:8989"
 
 broker:
-  xpub: "tcp://192.168.200.13:8990"
-  xsub: "tcp://192.168.200.13:8989"
+  xpub: "tcp://192.168.200.14:8990"
+  xsub: "tcp://192.168.200.14:8989"
 
 control_applications:
   chscontroller:

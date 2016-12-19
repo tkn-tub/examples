@@ -1,6 +1,7 @@
 import logging
 import datetime
 import datetime
+import numpy as np
 
 from uniflex.core import modules
 from uniflex.core import events
@@ -93,12 +94,18 @@ class ChannelSounderWiFiController(modules.ControlApplication):
         devName = None
         if data.device:
             devName = data.device.name
-        msg = data.msg
+        csi = data.msg
+
         print("Default Callback: "
               "Node: {}, Dev: {}, Data: {}"
-              .format(node.hostname, devName, msg))
+              .format(node.hostname, devName, csi.shape))
 
-        self.results.append(msg)
+        csi_0 = csi[0].view(np.recarray)
+        csi_0.header
+        csi_0.csi_matrix
+
+        print(csi_0.header)
+        self.results.append(csi_0)
 
         # schedule callback for next CSI value
         data.device.callback(self.channel_csi_cb).get_csi(self.samples, False)
