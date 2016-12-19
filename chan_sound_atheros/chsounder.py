@@ -101,10 +101,9 @@ class ChannelSounderWiFiController(modules.ControlApplication):
               .format(node.hostname, devName, csi.shape))
 
         csi_0 = csi[0].view(np.recarray)
-        csi_0.header
-        csi_0.csi_matrix
 
         print(csi_0.header)
+        #print(csi_0.csi_matrix)
         self.results.append(csi_0)
 
         # schedule callback for next CSI value
