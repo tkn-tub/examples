@@ -5,6 +5,7 @@ import numpy as np
 
 from uniflex.core import modules
 from uniflex.core import events
+from sbi.radio_device.events import CSISampleEvent
 
 __author__ = "Anatolij Zubow"
 __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
@@ -18,6 +19,8 @@ __email__ = "{zubow}@tkn.tu-berlin.de"
 '''
 
 class ChannelSounderWiFiController(modules.ControlApplication):
+    """ Polling based solution """
+
     def __init__(self, num_nodes):
         super(ChannelSounderWiFiController, self).__init__()
         self.log = logging.getLogger('ChannelSounderWiFiController')
@@ -108,4 +111,87 @@ class ChannelSounderWiFiController(modules.ControlApplication):
 
         # schedule callback for next CSI value
         data.device.callback(self.channel_csi_cb).get_csi(self.samples, False)
+
+
+class StreamedChannelSounderWiFiController(modules.ControlApplication):
+    """ Using CSI collector service - register for CSIs and you will get each CSI via CSISampleEvent event """
+
+    def __init__(self, num_nodes):
+        super(StreamedChannelSounderWiFiController, self).__init__()
+        self.log = logging.getLogger('StreamedChannelSounderWiFiController')
+        self.log.info("StreamedChannelSounderWiFiController")
+        self.nodes = {}  # APs UUID -> node
+        self.num_nodes = num_nodes
+
+    @modules.on_start()
+    def my_start_function(self):
+        self.log.info("start control app")
+
+        self.ifaceName = 'wlan0'
+        self.start = None
+        # self.hopping_interval = 3
+
+        # CSI stuff
+        self.results = []
+        self.samples = 1
+
+    @modules.on_exit()
+    def my_stop_function(self):
+        self.log.info("stop control app")
+
+    @modules.on_event(events.NewNodeEvent)
+    def add_node(self, event):
+        node = event.node
+
+        self.log.info("Added new node: {}, Local: {}"
+                      .format(node.uuid, node.local))
+        self.nodes[node.uuid] = node
+
+        devs = node.get_devices()
+        for dev in devs:
+            self.log.info("Dev: %s" % str(dev.name))
+            ifaces = dev.get_interfaces()
+            self.log.info('Ifaces %s' % ifaces)
+            # start CSI collector service
+            dev.csi_collector_start()
+
+    @modules.on_event(events.NodeExitEvent)
+    @modules.on_event(events.NodeLostEvent)
+    def remove_node(self, event):
+        self.log.info("Node lost".format())
+        node = event.node
+        reason = event.reason
+        # stop service
+        devs = node.get_devices()
+        for dev in devs:
+            self.log.info("Dev: %s" % str(dev.name))
+            # start CSI collector service
+            dev.csi_collector_stop()
+
+        if node in self.nodes:
+            del self.nodes[node.uuid]
+            self.log.info("Node: {}, Local: {} removed reason: {}"
+                          .format(node.uuid, node.local, reason))
+
+    @modules.on_event(CSISampleEvent)
+    def channel_csi_cb(self, event):
+        """
+        Callback function called for each received CSI
+        """
+        node = event.node
+        devName = None
+        if event.device:
+            devName = event.device.name
+        csi = event.sample
+
+        self.log.info("CSISampleEvent received: "
+              "Node: {}, Dev: {}"
+              .format(node.hostname, devName))
+
+        csi_0 = csi[0].view(np.recarray)
+
+        self.log.info(csi_0.header)
+        # print(csi_0.csi_matrix)
+        self.results.append(csi_0)
+
 
