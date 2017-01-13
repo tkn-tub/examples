@@ -36,6 +36,12 @@ class GuiFeeder(modules.ControlApplication):
             s = StaInfo(sta[0], sta[1], sta[2])
             self.sta_list.append(s)
 
+    @modules.on_start()
+    def my_start(self):
+        self.timeInterval = 10
+        self.timer = TimerEventSender(self, SampleSendTimeEvent)
+        self.timer.start(self.timeInterval)
+
     @modules.on_event(StaThroughputConfigEvent)
     def serve_throughput_config_event(self, event):
         sta = event.sta
@@ -72,16 +78,27 @@ class GuiFeeder(modules.ControlApplication):
                             s.iperfProcess.stop()
 
     @modules.on_event(SampleSendTimeEvent)
-    def send_random_samples(self, event):
+    def send_random_samples(self, ev):
+        self.timer.start(1)
+        share = 100
+
         for sta in self.sta_list:
-            if sta.state:
+            #if sta.state:
                 self.log.info("Send new random samples for device: {}"
                               .format(sta.name))
 
+                event = StaStateEvent(sta.name, True)
+                self.send_event(event)
+
+                throughput = random.uniform(5, 108)
+                event = StaThroughputEvent(sta.name, throughput)
+                self.send_event(event)
+
                 phyRate = random.uniform(5, 54)
                 event = StaPhyRateEvent(sta.name, phyRate)
-                # self.send_event(event)
+                self.send_event(event)
 
-                slotShare = random.uniform(0, 100)
+                slotShare = random.uniform(0, share)
+                share = share - slotShare
                 event = StaSlotShareEvent(sta.name, slotShare)
-                # self.send_event(event)
+                self.send_event(event)
