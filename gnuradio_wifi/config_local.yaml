@@ -1,19 +1,19 @@
 ## UniFlex Agent config file
 
 config:
-  name: 'Local_GnuRadio_Controller'
-  info: 'Local UniFlex control program controlling network node running GnuRadio'
+  name: 'Local_GnuRadio_WiFi_Controller'
+  info: 'Local UniFlex control program controlling network node running GnuRadio WiFi (gr-802.11)'
   iface: 'lo'
 
 control_applications:
   myController:
       file : local_control_app.py
-      class_name : MyGnuRadioController
+      class_name : MyGnuRadioWiFiController
       kwargs : {}
 
 modules:
   gnuradio:
-      module : uniflex_module_gnuradio
-      class_name : GnuRadioModule
+      module : uniflex_module_wifi_gnuradio 
+      class_name : WiFiGnuRadioModule
       devices : ['uhd0']
       kwargs: {"usrp_addr":"addr=192.168.30.2", "ctrl_socket_host":"localhost", "ctrl_socket_port":8080}
