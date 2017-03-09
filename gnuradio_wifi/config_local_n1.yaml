@@ -19,9 +19,9 @@ modules:
       kwargs: {"usrp_addr":"addr=192.168.30.2",
                "ctrl_socket_host":"localhost",
                "ctrl_socket_port":8080,
-               "src_mac":"12:34:56:78:90:ab",
-               "dst_mac":"30:14:4a:e6:46:e4",
+               "src_mac":"30:14:4a:e6:46:e4",
+               "dst_mac":"12:34:56:78:90:ab",
                "bss_mac":"66:66:66:66:66:66",
-               "src_ipv4_address":"192.168.123.1",
-               "dst_ipv4_address":"192.168.123.2"}
+               "src_ipv4_address":"192.168.123.2"}
+               "dst_ipv4_address":"192.168.123.1",
 
