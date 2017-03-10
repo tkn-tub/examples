@@ -23,5 +23,6 @@ modules:
                "dst_mac":"12:34:56:78:90:ab",
                "bss_mac":"66:66:66:66:66:66",
                "src_ipv4_address":"192.168.123.2",
-               "dst_ipv4_address":"192.168.123.1"}
+               "dst_ipv4_address":"192.168.123.1",
+               "gnu_rp_name":"uniflex_wifi_transceiver_n1"}
 
