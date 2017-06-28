@@ -1,7 +1,10 @@
-version: '3'
+version: '2'
 services:
   broker:
     build: ./broker
+    ports:
+     - "8989"
+     - "8990"
   controller:
     build: ./controller
 
