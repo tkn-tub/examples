@@ -17,7 +17,7 @@ RUN cd /usr/local/bin \
     && ln -s pip3 pip \
     && ln -s python3-config python-config
 
-RUN pip3 install git+https://github.com/uniflex/uniflex@dockerprep
+RUN pip3 install git+https://github.com/uniflex/uniflex@master
 
 EXPOSE 8989 8990
 
