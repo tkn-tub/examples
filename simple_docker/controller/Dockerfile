@@ -19,11 +19,10 @@ RUN cd /usr/local/bin \
 
 RUN pip3 install git+https://github.com/uniflex/uniflex@dockerprep
 RUN pip3 install git+https://github.com/wishful-project/pyre@master
-RUN pip3 install git+https://github.com/uniflex/app_discovery_pyre@master
+RUN pip3 install git+https://github.com/uniflex/sbi@master
 
-COPY master.yaml /app/master.yaml
-
-EXPOSE 8989 8990
+COPY . /app/
+WORKDIR /app
 
 ENTRYPOINT ["/sbin/tini", "-v", "--"]
-CMD ["uniflex-agent", "--config", "/app/master.yaml", "-v"]
+CMD ["uniflex-agent", "--config", "master.yaml"]

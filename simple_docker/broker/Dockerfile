@@ -22,4 +22,4 @@ RUN pip3 install git+https://github.com/uniflex/uniflex@master
 EXPOSE 8989 8990
 
 ENTRYPOINT ["/sbin/tini", "-v", "--"]
-CMD ["uniflex-broker"]
+CMD ["uniflex-broker", "--xpub", "tcp://*:8990", "--xsub", "tcp://*:8989"]

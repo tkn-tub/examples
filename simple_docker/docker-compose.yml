@@ -3,8 +3,12 @@ services:
   broker:
     build: ./broker
     ports:
-     - "8989"
-     - "8990"
+     - "8989:8989"
+     - "8990:8990"
   controller:
     build: ./controller
+    ports:
+     - "5670:5670/udp"
+    depends_on:
+     - broker
 
