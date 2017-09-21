@@ -153,10 +153,23 @@ class MyController(modules.ControlApplication):
                 break
 
         if avgFilterApp.is_running():
+            myValue = random.randint(1, 20)
+            [nValue1, nValue2] = avgFilterApp.blocking(True).add_two(myValue)
+            print("My value: {} + 2 = {}".format(myValue, nValue1))
+            print("My value: {} * 2 = {}".format(myValue, nValue2))
             avgFilterApp.stop()
+
+            newWindow = random.randint(10, 50)
+            old = avgFilterApp.blocking(True).get_window_size()
+            print("Old Window Size : {}".format(old))
+            avgFilterApp.blocking(True).change_window_size_func(newWindow)
+            nValue = avgFilterApp.blocking(True).get_window_size()
+            print("New Window Size : {}".format(nValue))
+
         else:
             avgFilterApp.start()
-            event = ChangeWindowSizeEvent(random.randint(10, 50))
+            newWindow = random.randint(10, 50)
+            event = ChangeWindowSizeEvent(newWindow)
             avgFilterApp.send_event(event)
 
         # execute non-blocking function immediately

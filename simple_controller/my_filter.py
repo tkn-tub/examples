@@ -22,6 +22,13 @@ class MyAvgFilter(modules.ControlApplication):
         self.log.info("New window size: {}".format(event.window))
         self.window = event.window
 
+    def change_window_size_func(self, newWindow):
+        self.log.info("New window size: {}".format(newWindow))
+        self.window = newWindow
+
+    def get_window_size(self):
+        return self.window
+
     @modules.on_event(SpectralScanSampleEvent)
     def serve_spectral_scan_sample(self, event):
         sample = event.sample
@@ -39,3 +46,8 @@ class MyAvgFilter(modules.ControlApplication):
             self.log.debug("Calculated average: {}".format(avg))
             event = AveragedSpectrumScanSampleEvent(avg)
             self.send_event(event)
+
+    def add_two(self, value):
+        value1 = value + 2
+        value2 = value * 2
+        return [value1, value2]
