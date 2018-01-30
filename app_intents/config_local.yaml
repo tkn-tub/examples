@@ -1,0 +1,28 @@
+## UniFlex Agent config file
+
+config:
+  name: 'Local_IPerf_Controller_with_Intents'
+  info: 'Local UniFlex control program testing intents in iperf app'
+  iface: 'lo'
+
+control_applications:
+  myController:
+      file : local_control_app.py
+      class_name : MyIperfController
+      kwargs : {}
+
+  iperf:
+      module : uniflex_app_iperf
+      class_name : IperfModule
+      kwargs : {}
+
+  app_intents:
+      module : uniflex_app_intents
+      class_name : ApplicationIntentsModule
+      kwargs : {}
+
+modules:
+  simple:
+      module : uniflex_module_simple
+      class_name : SimpleModule2
+      devices : ['phy0']
