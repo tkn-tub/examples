@@ -1,7 +1,7 @@
 import logging
 import datetime
 import random
-import wishful_upis as upis
+from sbi.radio_device.events import PacketLossEvent
 from uniflex.core import modules
 from uniflex.core import events
 from uniflex.core.timer import TimerEventSender
@@ -40,8 +40,8 @@ class MyController(modules.ControlApplication):
         self.running = True
 
         node = self.localNode
-        self.log.info("My local node: {}, Local: {}"
-                      .format(node.hostname, node.local))
+        self.log.info("My local, Local: {}"
+                      .format(node.local))
 
         for dev in node.get_devices():
             print("Dev: ", dev.name)
@@ -56,24 +56,23 @@ class MyController(modules.ControlApplication):
             print(app)
 
         device = node.get_device(0)
-        device.radio.set_tx_power(15, 'ath0')
-        device.radio.set_channel(random.randint(1, 11), 'ath0')
-        device.enable_event(upis.radio.PacketLossEvent)
+        device.set_tx_power(15, 'ath0')
+        device.set_channel(random.randint(1, 11), 'ath0')
+        device.packet_loss_monitor_start()
         self.packetLossEventsEnabled = True
-        device.start_service(
-            upis.radio.SpectralScanService(rate=1000, f_range=[2200, 2500]))
+        device.spectral_scan_start()
 
     @modules.on_exit()
     def my_stop_function(self):
         print("stop control app")
         self.running = False
 
-    @modules.on_event(upis.radio.PacketLossEvent)
+    @modules.on_event(PacketLossEvent)
     def serve_packet_loss_event(self, event):
         node = event.node
         device = event.device
-        self.log.info("Packet loss in node {}, dev: {}"
-                      .format(node.hostname, device.name))
+        self.log.info("Packet loss, dev: {}"
+                      .format(device))
 
     @modules.on_event(AveragedSpectrumScanSampleEvent)
     def serve_spectral_scan_sample(self, event):
@@ -88,16 +87,16 @@ class MyController(modules.ControlApplication):
             devName = data.device.name
         msg = data.msg
         print("Default Callback: "
-              "Node: {}, Dev: {}, Data: {}"
-              .format(node.hostname, devName, msg))
+              "Dev: {}, Data: {}"
+              .format(devName, msg))
 
     def get_power_cb(self, data):
         node = data.node
         dev = data.device
         msg = data.msg
         print("Power in "
-              "Node: {}, Dev: {}, was set to: {}"
-              .format(node.hostname, dev.name, msg))
+              "Dev: {}, was set to: {}"
+              .format(dev.name, msg))
 
     @modules.on_event(PeriodicEvaluationTimeEvent)
     def periodic_evaluation(self, event):
@@ -108,15 +107,15 @@ class MyController(modules.ControlApplication):
         node = self.localNode
         device = node.get_device(0)
 
-        self.log.info("My local node: {}, Local: {}"
-                      .format(node.hostname, node.local))
+        self.log.info("My local node, Local: {}"
+                      .format(node.local))
         self.timer.start(self.timeInterval)
 
         if self.packetLossEventsEnabled:
-            device.disable_event(upis.radio.PacketLossEvent)
+            device.packet_loss_monitor_stop()
             self.packetLossEventsEnabled = False
         else:
-            device.enable_event(upis.radio.PacketLossEvent)
+            device.packet_loss_monitor_start()
             self.packetLossEventsEnabled = True
 
         if self.myFilterRunning:
@@ -127,27 +126,27 @@ class MyController(modules.ControlApplication):
             self.myFilterRunning = True
 
         # execute non-blocking function immediately
-        device.blocking(False).radio.set_tx_power(random.randint(1, 20), 'ath0')
+        device.blocking(False).set_tx_power(random.randint(1, 20), 'ath0')
 
         # execute non-blocking function immediately, with specific callback
-        device.callback(self.get_power_cb).radio.get_tx_power('ath0')
+        device.callback(self.get_power_cb).get_tx_power('ath0')
 
         # schedule non-blocking function delay
-        device.delay(3).callback(self.default_cb).radio.get_tx_power("wlan0")
+        device.delay(3).callback(self.default_cb).get_tx_power("wlan0")
 
         # schedule non-blocking function exec time
         exec_time = datetime.datetime.now() + datetime.timedelta(seconds=3)
         newChannel = random.randint(1, 11)
-        device.exec_time(exec_time).radio.set_channel(newChannel, 'ath0')
+        device.exec_time(exec_time).set_channel(newChannel, 'ath0')
 
         # execute blocking function immediately
-        result = device.radio.get_channel('ath0')
+        result = device.get_channel('ath0')
         print("{} Channel is: {}".format(datetime.datetime.now(), result))
 
         # exception handling, clean_per_flow_tx_power_table implementation
         # raises exception
         try:
-            device.radio.clean_per_flow_tx_power_table("wlan0")
+            device.clean_per_flow_tx_power_table("wlan0")
         except Exception as e:
             print("{} !!!Exception!!!: {}".format(
                 datetime.datetime.now(), e))
