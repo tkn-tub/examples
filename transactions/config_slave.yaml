@@ -1,0 +1,24 @@
+## UniFlex Agent config file
+
+config:
+  name: 'HC node'
+  info: 'filter runs on local node'
+  iface: 'lo'
+
+control_applications:
+  myFilter:
+      file : my_filter.py
+      class_name : MyAvgFilter
+      kwargs : {"window": 5}
+
+  discovery:
+      module : uniflex_app_discovery_pyre
+      class_name : PyreDiscoverySlaveModule
+      kwargs: {"iface":"lo", "groupName":"uniflex_1234"}
+
+modules:
+  simple:
+      module : uniflex_module_simple
+      class_name : SimpleModule2
+      devices : ['phy0']
+
