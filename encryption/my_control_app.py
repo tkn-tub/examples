@@ -1,5 +1,6 @@
 import logging
 import datetime
+import time
 
 from uniflex.core import modules
 from uniflex.core import events
@@ -68,7 +69,7 @@ class SimpleBenchmark(modules.ControlApplication):
             self.log.info("Node: {}, Local: {} removed reason: {}"
                           .format(node.uuid, node.local, reason))
 
-    def get_power_cb(self, data):
+    def non_blocking_cb(self, data):
 
         self.current_num += 1
 
@@ -105,15 +106,15 @@ class SimpleBenchmark(modules.ControlApplication):
         device = node.get_device(0)
 
         self.current_num = 0
-        self.repeatNum = 10000
+        self.repeatNum = 5000
         self.start = datetime.datetime.now()
         self.log.info(
             "Start performace test, execute {} non blocking RPC calls".format(
                 self.repeatNum))
-        for i in range(self.repeatNum):
-            # device.get_channel("wlan0")
 
-            device.callback(self.get_power_cb).get_tx_power("wlan0")
+        for i in range(self.repeatNum):
+            device.callback(self.non_blocking_cb).get_channel("wlan0")
+            time.sleep(0.0001)
 
     @modules.on_event(PeriodicBlockingEvaluationTimeEvent)
     def periodic_blocking_evaluation(self, event):
@@ -131,7 +132,7 @@ class SimpleBenchmark(modules.ControlApplication):
 
         # test blocking call in loop
         self.current_num = 0
-        self.repeatNum = 10000
+        self.repeatNum = 5000
         self.start = datetime.datetime.now()
         self.log.info(
             "Start performace test, execute {} blocking RPC calls".format(
