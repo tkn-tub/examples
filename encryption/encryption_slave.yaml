@@ -2,17 +2,12 @@
 
 config:
   name: 'HC node'
-  info: 'filter runs on local node'
+  info: 'Simple Benchmark node encryption'
   iface: 'lo'
   client_key: 'private_keys/nucB.key_secret'
   server_key: 'public_keys/server.key'
 
 control_applications:
-  myFilter:
-      file : my_filter.py
-      class_name : MyAvgFilter
-      kwargs : {"window": 5}
-
   discovery:
       module : uniflex_app_discovery_pyre
       class_name : PyreDiscoverySlaveModule

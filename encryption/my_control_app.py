@@ -1,45 +1,53 @@
 import logging
 import datetime
-import random
 
-from sbi.radio_device.events import PacketLossEvent
 from uniflex.core import modules
 from uniflex.core import events
 from uniflex.core.timer import TimerEventSender
-from common import AveragedSpectrumScanSampleEvent
-from common import ChangeWindowSizeEvent
 
-__author__ = "Piotr Gawlowicz"
-__copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
+__author__ = "Piotr Gawlowicz, Mikołaj Chwalisz"
+__copyright__ = "Copyright (c) 2016-2018, Technische Universität Berlin"
 __version__ = "0.1.0"
 __email__ = "{gawlowicz}@tkn.tu-berlin.de"
 
 
-class PeriodicEvaluationTimeEvent(events.TimeEvent):
+class PeriodicBlockingEvaluationTimeEvent(events.TimeEvent):
     def __init__(self):
         super().__init__()
 
 
-class MyController(modules.ControlApplication):
+class PeriodicNonBlockingEvaluationTimeEvent(events.TimeEvent):
     def __init__(self):
-        super(MyController, self).__init__()
-        self.log = logging.getLogger('MyController')
+        super().__init__()
+
+
+class SimpleBenchmark(modules.ControlApplication):
+    def __init__(self, title=''):
+        super(SimpleBenchmark, self).__init__()
+        self.log = logging.getLogger('SimpleBenchmark')
+        self.title = title
         self.running = False
 
-        self.timeInterval = 10
-        self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
-        self.timer.start(self.timeInterval)
+        self.timeInterval = 4
+        self.blocking_timer = TimerEventSender(
+            self, PeriodicBlockingEvaluationTimeEvent)
+        self.non_blocking_timer = TimerEventSender(
+            self, PeriodicNonBlockingEvaluationTimeEvent)
+
+        self.non_blocking_timer.start(self.timeInterval)
 
         self.packetLossEventsEnabled = False
 
     @modules.on_start()
     def my_start_function(self):
-        print("start control app")
+        self.log.info("start control app")
+        print('"Experiment";"Call type";"Nr calls";"Total duration";"Average per call"')
+        self.csv_template = '"{title}";{call};{nr};{total};{per_call}'
         self.running = True
 
     @modules.on_exit()
     def my_stop_function(self):
-        print("stop control app")
+        self.log.info("stop control app")
         self.running = False
 
     @modules.on_event(events.NewNodeEvent)
@@ -49,26 +57,6 @@ class MyController(modules.ControlApplication):
         self.log.info("Added new node: {}, Local: {}"
                       .format(node.uuid, node.local))
         self._add_node(node)
-
-        for dev in node.get_devices():
-            print("Dev: ", dev.name)
-            print(dev)
-
-        for m in node.get_modules():
-            print("Module: ", m.name)
-            print(m)
-
-        for app in node.get_control_applications():
-            print("App: ", app.name)
-            print(app)
-
-        device = node.get_device(0)
-        device.set_tx_power(15, "wlan0")
-        device.set_channel(random.randint(1, 11), "wlan0")
-        device.packet_loss_monitor_start()
-        device.spectral_scan_start()
-        # device.play_waveform()
-        # TODO: is_implemented()
 
     @modules.on_event(events.NodeExitEvent)
     @modules.on_event(events.NodeLostEvent)
@@ -80,126 +68,92 @@ class MyController(modules.ControlApplication):
             self.log.info("Node: {}, Local: {} removed reason: {}"
                           .format(node.uuid, node.local, reason))
 
-    @modules.on_event(PacketLossEvent)
-    def serve_packet_loss_event(self, event):
-        node = event.node
-        device = event.device
-        self.log.info("Packet loss in node {}, dev: {}"
-                      .format(node.hostname, device.name))
-
-    @modules.on_event(AveragedSpectrumScanSampleEvent)
-    def serve_spectral_scan_sample(self, event):
-        avgSample = event.avg
-        self.log.info("Averaged Spectral Scan Sample: {}"
-                      .format(avgSample))
-
-    def default_cb(self, data):
-        node = data.node
-        devName = None
-        if data.device:
-            devName = data.device.name
-        msg = data.msg
-        print("Default Callback: "
-              "Node: {}, Dev: {}, Data: {}"
-              .format(node.hostname, devName, msg))
-
     def get_power_cb(self, data):
-        node = data.node
-        msg = data.msg
-        dev = node.get_device(0)
-        print("Power in "
-              "Node: {}, Dev: {}, was set to: {}"
-              .format(node.hostname, dev.name, msg))
 
-        newPwr = random.randint(1, 20)
-        dev.blocking(False).set_tx_power(newPwr, "wlan0")
-        print("Power in "
-              "Node: {}, Dev: {}, was set to: {}"
-              .format(node.hostname, dev.name, newPwr))
+        self.current_num += 1
 
-    def scheduled_get_channel_cb(self, data):
-        node = data.node
-        msg = data.msg
-        dev = node.get_device(0)
-        print("Scheduled get_channel; Power in "
-              "Node: {}, Dev: {}, was set to: {}"
-              .format(node.hostname, dev.name, msg))
+        if self.current_num >= self.repeatNum:
+            end = datetime.datetime.now()
+            duration = end - self.start
+            perCall = duration / self.repeatNum
+            self.log.info(
+                "{} RPC calls were executed in: {}s".format(
+                    self.repeatNum, duration))
+            self.log.info(
+                "--- mean duration of single call: {}s".format(perCall))
+            print(self.csv_template.format(
+                title=self.title,
+                call='non blocking',
+                nr=self.repeatNum,
+                total=duration,
+                per_call=perCall))
 
-    @modules.on_event(PeriodicEvaluationTimeEvent)
-    def periodic_evaluation(self, event):
-        # go over collected samples, etc....
-        # make some decisions, etc...
-        print("Periodic Evaluation")
-        print("My nodes: ", [node.hostname for node in self.get_nodes()])
-        self.timer.start(self.timeInterval)
+            self.blocking_timer.start(self.timeInterval)
+
+    @modules.on_event(PeriodicNonBlockingEvaluationTimeEvent)
+    def periodic_non_blocking_evaluation(self, event):
+        self.log.info("Periodic Non Blocking Evaluation")
+        self.log.info(
+            "My nodes: %s",
+            ', '.join([node.hostname for node in self.get_nodes()]))
 
         if len(self.get_nodes()) == 0:
+            self.non_blocking_timer.start(self.timeInterval)
             return
 
         node = self.get_node(0)
         device = node.get_device(0)
 
-        if device.is_packet_loss_monitor_running():
-            device.packet_loss_monitor_stop()
-            device.spectral_scan_stop()
-        else:
-            device.packet_loss_monitor_start()
-            device.spectral_scan_start()
+        self.current_num = 0
+        self.repeatNum = 10000
+        self.start = datetime.datetime.now()
+        self.log.info(
+            "Start performace test, execute {} non blocking RPC calls".format(
+                self.repeatNum))
+        for i in range(self.repeatNum):
+            # device.get_channel("wlan0")
 
-        avgFilterApp = None
-        for app in node.get_control_applications():
-            if app.name == "MyAvgFilter":
-                avgFilterApp = app
-                break
+            device.callback(self.get_power_cb).get_tx_power("wlan0")
 
-        if avgFilterApp.is_running():
-            myValue = random.randint(1, 20)
-            [nValue1, nValue2] = avgFilterApp.blocking(True).add_two(myValue)
-            print("My value: {} + 2 = {}".format(myValue, nValue1))
-            print("My value: {} * 2 = {}".format(myValue, nValue2))
-            avgFilterApp.stop()
+    @modules.on_event(PeriodicBlockingEvaluationTimeEvent)
+    def periodic_blocking_evaluation(self, event):
+        self.log.info("Periodic Blocking Evaluation")
+        self.log.info(
+            "My nodes: %s",
+            ', '.join([node.hostname for node in self.get_nodes()]))
 
-            newWindow = random.randint(10, 50)
-            old = avgFilterApp.blocking(True).get_window_size()
-            print("Old Window Size : {}".format(old))
-            avgFilterApp.blocking(True).change_window_size_func(newWindow)
-            nValue = avgFilterApp.blocking(True).get_window_size()
-            print("New Window Size : {}".format(nValue))
+        if len(self.get_nodes()) == 0:
+            self.blocking_timer.start(self.timeInterval)
+            return
 
-        else:
-            avgFilterApp.start()
-            newWindow = random.randint(10, 50)
-            event = ChangeWindowSizeEvent(newWindow)
-            avgFilterApp.send_event(event)
+        node = self.get_node(0)
+        device = node.get_device(0)
 
-        # execute non-blocking function immediately
-        device.blocking(False).set_tx_power(random.randint(1, 20), "wlan0")
+        # test blocking call in loop
+        self.current_num = 0
+        self.repeatNum = 10000
+        self.start = datetime.datetime.now()
+        self.log.info(
+            "Start performace test, execute {} blocking RPC calls".format(
+                self.repeatNum))
 
-        # execute non-blocking function immediately, with specific callback
-        device.callback(self.get_power_cb).get_tx_power("wlan0")
+        for i in range(self.repeatNum):
+            device.get_channel("wlan0")
 
-        # schedule non-blocking function delay
-        device.delay(3).callback(self.default_cb).get_tx_power("wlan0")
+        end = datetime.datetime.now()
+        duration = end - self.start
+        perCall = duration / self.repeatNum
+        self.log.info(
+            "{} blocking RPC calls were executed in: {}s".format(
+                self.repeatNum, duration))
+        self.log.info(
+            "--- mean duration of single blocking call: {}s".format(
+                perCall))
+        print(self.csv_template.format(
+            title=self.title,
+            call='blocking',
+            nr=self.repeatNum,
+            total=duration,
+            per_call=perCall))
 
-        # schedule non-blocking function exec time
-        exec_time = datetime.datetime.now() + datetime.timedelta(seconds=3)
-        newChannel = random.randint(1, 11)
-        device.exec_time(exec_time).set_channel(newChannel, "wlan0")
-
-        # schedule execution of function multiple times
-        start_date = datetime.datetime.now() + datetime.timedelta(seconds=2)
-        interval = datetime.timedelta(seconds=1)
-        repetitionNum = 3
-        device.exec_time(start_date, interval, repetitionNum).callback(self.scheduled_get_channel_cb).get_channel("wlan0")
-
-        # execute blocking function immediately
-        result = device.get_channel("wlan0")
-        print("{} Channel is: {}".format(datetime.datetime.now(), result))
-
-        # exception handling, clean_per_flow_tx_power_table implementation
-        # raises exception
-        try:
-            device.clean_per_flow_tx_power_table("wlan0")
-        except Exception as e:
-            print("{} !!!Exception!!!: {}".format(
-                datetime.datetime.now(), e))
+        self.non_blocking_timer.start(self.timeInterval)

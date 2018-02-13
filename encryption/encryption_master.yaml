@@ -2,7 +2,7 @@
 
 config:
   name: "Global_Controller"
-  info: 'agent hosts global controller'
+  info: 'Simple Benchmark Controller encryption'
   iface: 'lo'
   sub: "tcp://127.0.0.1:8990"
   pub: "tcp://127.0.0.1:8989"
@@ -16,10 +16,10 @@ broker:
   client_keys: 'public_keys/'
 
 control_applications:
-  myController:
+  simple_benchmark:
       file : my_control_app.py
-      class_name : MyController
-      kwargs : {}
+      class_name : SimpleBenchmark
+      kwargs : {"title":"encryption"}
 
 modules:
   discovery:
