@@ -1,0 +1,21 @@
+## UniFlex Agent config file
+
+config:
+  name: 'HC node'
+  info: 'Simple Benchmark node encryption'
+  iface: 'lo'
+  client_key: 'private_keys/nucB.key_secret'
+  server_key: 'public_keys/server.key'
+
+control_applications:
+  discovery:
+      module : uniflex_app_discovery_pyre
+      class_name : PyreDiscoverySlaveModule
+      kwargs: {"iface":"lo", "groupName":"uniflex_1234"}
+
+modules:
+  simple:
+      module : uniflex_module_simple
+      class_name : SimpleModule2
+      devices : ['phy0']
+
