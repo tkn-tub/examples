@@ -1,0 +1,32 @@
+## UniFlex Agent config file
+
+config:
+  name: "Global_Controller"
+  info: 'Simple Benchmark Controller encryption'
+  iface: 'lo'
+  sub: "tcp://127.0.0.1:8990"
+  pub: "tcp://127.0.0.1:8989"
+  client_key: 'private_keys/server.key_secret'
+  server_key: 'public_keys/server.key'
+
+broker:
+  xpub: "tcp://127.0.0.1:8990"
+  xsub: "tcp://127.0.0.1:8989"
+  server_key: 'private_keys/server.key_secret'
+  client_keys: 'public_keys/'
+
+control_applications:
+  simple_benchmark:
+      file : my_control_app.py
+      class_name : SimpleBenchmark
+      kwargs : {"title":"encryption"}
+
+modules:
+  discovery:
+        module : uniflex_app_discovery_pyre
+        class_name : PyreDiscoveryMasterModule
+        kwargs: {"iface":"lo",
+                 "groupName":"uniflex_1234",
+                 "sub":"tcp://127.0.0.1:8990",
+                 "pub":"tcp://127.0.0.1:8989"
+                }

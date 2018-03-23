@@ -1,0 +1,19 @@
+## UniFlex Agent config file
+
+config:
+  name: 'HC node'
+  info: 'Simple Benchmark node clear text'
+  iface: 'lo'
+
+control_applications:
+  discovery:
+      module : uniflex_app_discovery_pyre
+      class_name : PyreDiscoverySlaveModule
+      kwargs: {"iface":"lo", "groupName":"uniflex_1234"}
+
+modules:
+  simple:
+      module : uniflex_module_simple
+      class_name : SimpleModule2
+      devices : ['phy0']
+

@@ -1,0 +1,29 @@
+## UniFlex Agent config file
+
+config:
+  name: 'Local_Controller'
+  info: 'CPs and modules on single node'
+  iface: 'lo'
+
+control_applications:
+  myController:
+      file : my_local_control_app.py
+      class_name : MyController
+      kwargs : {}
+
+  myFilter:
+      file : my_filter.py
+      class_name : MyAvgFilter
+      kwargs : {"window": 5}
+
+
+modules:
+  discovery:
+      module : uniflex_app_discovery_pyre
+      class_name : PyreDiscoverySlaveModule
+      kwargs: {"iface":"lo", "groupName":"uniflex_1234"}
+
+  simple:
+      module : uniflex_module_simple
+      class_name : SimpleModule2
+      devices : ['phy0']
