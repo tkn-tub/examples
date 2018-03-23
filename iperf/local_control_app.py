@@ -72,6 +72,7 @@ class MyIperfController(modules.ControlApplication):
         iperfClientEvent.resultReportInterval = 1
         iperfClientEvent.stopAfterFirstReport = False
         iperfClientEvent.transmissionTime = 5
+        iperfClientEvent.destination = '127.0.0.1'
 
         self.log.info("Start iperf client ...")
         self.send_event(iperfClientEvent)
