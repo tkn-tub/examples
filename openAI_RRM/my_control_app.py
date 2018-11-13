@@ -45,6 +45,7 @@ class OpenAIRRM(modules.ControlApplication):
     def my_start_function(self):
         print("start control app")
         self.running = True
+        self.openAI_controller.run()
 
     @modules.on_exit()
     def my_stop_function(self):

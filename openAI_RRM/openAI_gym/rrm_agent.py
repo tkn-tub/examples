@@ -8,7 +8,7 @@ import numpy as np
 from tensorflow import keras
 from ns3gym import ns3env
 
-class test(object):
+class rrm_agent(object):
     def __init__(self, unifelxController, **kwargs):
         env = gym.make('ns3-v0')
         ob_space = env.observation_space

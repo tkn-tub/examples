@@ -16,7 +16,7 @@ control_applications:
       file : my_control_app.py
       class_name : OpenAIRRM
       kwargs : {
-            'openAI_controller': "openAI_gym.test"
+            'openAI_controller': "openAI_gym.rrm_agent"
       }
 
 modules:
