@@ -20,7 +20,7 @@ class PeriodicEvaluationTimeEvent(events.TimeEvent):
         super().__init__()
 
 
-class OpenAIRRM(modules.ControlApplication):
+class UniflexChannelController(modules.ControlApplication):
     def __init__(self,**kwargs):
         super(OpenAIRRM, self).__init__()
         self.log = logging.getLogger('OpenAI_RRM')
