@@ -13,6 +13,13 @@ import numpy as np
 env = gym.make('uniflex-v0')
 env.configure(steptime=10)
 env.start_controller()
+env.reset()
+
+n = 0
+
+while True:
+    env.step([])
+    print ("next step")
 
 '''
 ob_space = env.observation_space

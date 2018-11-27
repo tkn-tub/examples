@@ -22,8 +22,8 @@ class PeriodicEvaluationTimeEvent(events.TimeEvent):
 
 class UniflexChannelController(modules.ControlApplication):
     def __init__(self,**kwargs):
-        super(OpenAIRRM, self).__init__()
-        self.log = logging.getLogger('OpenAI_RRM')
+        super(UniflexChannelController, self).__init__()
+        self.log = logging.getLogger('ChannelController')
         self.running = False
 
         self.timeInterval = 10
@@ -33,13 +33,13 @@ class UniflexChannelController(modules.ControlApplication):
         self.packetLossEventsEnabled = False
         self.channel = 1
         
-        if not "openAI_controller" in kwargs:
-            raise ValueError("There is no OpenAI gym controller specified. Can not find \"" + "openAI_controller" + "\" as kwargs in the config file.")
-        else:
-            __import__(kwargs["openAI_controller"], globals(), locals(), [], 0)
-            splits = kwargs["openAI_controller"].split('.')
-            class_name = splits[-1]
-            self.openAI_controller = class_name(self, kwargs)
+#        if not "openAI_controller" in kwargs:
+#            raise ValueError("There is no OpenAI gym controller specified. Can not #find \"" + "openAI_controller" + "\" as kwargs in the config file.")
+#        else:
+#            __import__(kwargs["openAI_controller"], globals(), locals(), [], 0)
+#            splits = kwargs["openAI_controller"].split('.')
+#            class_name = splits[-1]
+#            self.openAI_controller = class_name(self, kwargs)
 
     @modules.on_start()
     def my_start_function(self):
@@ -152,9 +152,9 @@ class UniflexChannelController(modules.ControlApplication):
         if device is None:
             return False
         if channel_width is not None:
-            device.blocking(False).set_channel(channel_number, "wlan0", channel_width= channel_width)
+            device.blocking(False).set_channel(channel_number, ifaceName, channel_width= channel_width)
         else:
-            device.blocking(False).set_channel(channel_number, "wlan0")
+            device.blocking(False).set_channel(channel_number, ifaceName)
         return True
 
     '''
