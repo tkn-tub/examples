@@ -11,8 +11,8 @@ import numpy as np
 
 #create uniflex environment, steptime is 10sec
 env = gym.make('uniflex-v0')
-env.configure(steptime=10)
-env.start_controller()
+#env.configure()
+env.start_controller(steptime=10)
 env.reset()
 
 n = 0

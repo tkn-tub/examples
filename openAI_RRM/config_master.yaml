@@ -15,6 +15,7 @@ control_applications:
   myController:
       file : my_control_app.py
       class_name : OpenAIRRM
+      openAIGymController: True
       kwargs : {
             'openAI_controller': "openAI_gym.rrm_agent"
       }
