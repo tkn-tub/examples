@@ -29,11 +29,14 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         self.running = False
 
         self.timeInterval = 10
-        self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
-        self.timer.start(self.timeInterval)
+#        self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
+#        self.timer.start(self.timeInterval)
 
         self.packetLossEventsEnabled = False
         self.channel = 1
+        
+        self.observationSpace = []
+        self.lastObservation = []
         
 #        if not "openAI_controller" in kwargs:
 #            raise ValueError("There is no OpenAI gym controller specified. Can not #find \"" + "openAI_controller" + "\" as kwargs in the config file.")
@@ -47,7 +50,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     def my_start_function(self):
         print("start control app")
         self.running = True
-        self.openAI_controller.run()
+#        self.openAI_controller.run()
 
     @modules.on_exit()
     def my_stop_function(self):
@@ -340,11 +343,6 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     OpenAI Gym Uniflex env API
     '''
     
-    def __init__(self, **kwargs):
-        super()
-        self.observationSpace = []
-        self.lastObservation = []
-        return
     
     def reset(self):
         self.observationSpace = self._create_client_list()

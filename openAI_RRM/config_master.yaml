@@ -13,8 +13,8 @@ broker:
 
 control_applications:
   myController:
-      file : my_control_app.py
-      class_name : OpenAIRRM
+      file : channel_controller.py
+      class_name : UniflexChannelController
       openAIGymController: True
       kwargs : {
             'openAI_controller': "openAI_gym.rrm_agent"

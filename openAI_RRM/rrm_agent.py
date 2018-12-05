@@ -7,12 +7,19 @@ import UniFlexGym
 #import tensorflow.contrib.slim as slim
 import numpy as np
 #from tensorflow import keras
+import argparse
 
+parser = argparse.ArgumentParser(description='Uniflex reader')
+parser.add_argument('--config', help='path to the uniflex config file', default=None)
+args = parser.parse_args()
+if not args.config:
+    print("No config file specified!")
+    quit()
 
 #create uniflex environment, steptime is 10sec
 env = gym.make('uniflex-v0')
 #env.configure()
-env.start_controller(steptime=10)
+env.start_controller(steptime=10, config=args.config)
 env.reset()
 
 n = 0
