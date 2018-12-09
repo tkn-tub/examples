@@ -20,7 +20,9 @@ if not args.config:
 env = gym.make('uniflex-v0')
 #env.configure()
 env.start_controller(steptime=10, config=args.config)
+print ("before reset")
 env.reset()
+print ("after reset")
 
 n = 0
 

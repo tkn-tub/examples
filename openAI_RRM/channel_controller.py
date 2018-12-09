@@ -191,7 +191,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                 
                 for flow in device.my_control_flow:
                     flow['old'] = True
-                
+                print("send getIface!")
                 for interface in device.get_interfaces():
                     infos = device.get_info_of_connected_devices(interface)
                     
@@ -319,7 +319,10 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
 
         if len(self.get_nodes()) == 0:
             return
-
+        self.reset()
+        self.execute_action([1])
+        print(self.get_observation())
+        '''
         flows = []
         
         ifaces = self.get_interfaces()
@@ -338,6 +341,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                     self.channel += 1
                     if self.channel > 13:
                         self.channel = 1
+        '''
     
     '''
     OpenAI Gym Uniflex env API
@@ -352,8 +356,8 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         
         # set a start channel for each interface:
         channel = 1
-        for node in interfaces:
-            for device in node['devices']:
+        for nodeUuid, node in interfaces.items():
+            for devUuid, device in node['devices'].items():
                 for iface in device['interfaces']:
                     self.set_channel(
                         node['uuid'], device['uuid'], iface, channel, None)
@@ -365,7 +369,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         return
     
     def execute_action(self, action):
-        for index, actionStep in action:
+        for index, actionStep in enumerate(action):
             interface = self.actionSpace[index]
             self.set_channel(interface['node'], interface['device'], interface['iface'], actionStep, None)
         return
@@ -381,11 +385,11 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     
     def get_observation(self):
         observation  = []
-        bandwidth = self.get_bandwidth()
-        bandwidth = sorted(bandwidth, key=lambda k: k['mac'])
+        bandwidthList = self.get_bandwidth()
+        #bandwidth = sorted(bandwidth, key=lambda k: k['mac'])
         for client in self.observationSpace:
-            bandwidth = self. _get_bandwidth_by_client( bandwidth, client)
-            if bandwidth in None:
+            bandwidth = self. _get_bandwidth_by_client( bandwidthList, client)
+            if bandwidth is None:
                 bandwidth = 0
             observation.append(bandwidth)
         
@@ -405,25 +409,25 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     
     
     def _get_bandwidth_by_client(self, bandwidthList, clientData):
-        for client in bandwidthList:
-            if (client['mac'] is clientData['mac']) and (client['node'] is clientData['node']) and (client['device'] is clientData['device']) and (client['iface'] is clientData['iface']):
+        for mac, client in bandwidthList.items():
+            if (mac is clientData['mac']) and (client['node'] is clientData['node']) and (client['device'] is clientData['device']) and (client['iface'] is clientData['iface']):
                 return client['bandwidth']
         return None
     
     def _create_client_list(self):
         clientList = []
         clients = self.get_bandwidth()
-        for client in clients:
-            clientList.append({'mac': client['mac'], 'node': client['node']['uuid'],
+        for mac, client in clients.items():
+            clientList.append({'mac': mac, 'node': client['node']['uuid'],
                 'device': client['device']['uuid'], 'iface': client['interface']})
-        clients = sorted(clients, key=lambda k: k['mac'])
+        clientList = sorted(clientList, key=lambda k: k['mac'])
         return clientList
     
     def _create_interface_list(self):
         interfaceList = []
         interfaces = self.get_interfaces()
-        for node in interfaces:
-            for device in node['devices']:
+        for nodeUuid, node in interfaces.items():
+            for devUuid, device in node['devices'].items():
                 for iface in device['interfaces']:
                     interfaceList.append({'node': node['uuid'], 'device': device['uuid'], 'iface': iface})
         return interfaceList
