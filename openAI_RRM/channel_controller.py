@@ -29,8 +29,8 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         self.running = False
 
         self.timeInterval = 10
-        self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
-        self.timer.start(self.timeInterval)
+#        self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
+#        self.timer.start(self.timeInterval)
 
         self.packetLossEventsEnabled = False
         self.channel = 1
