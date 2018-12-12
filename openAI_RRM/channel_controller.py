@@ -2,6 +2,8 @@ import logging
 import datetime
 import random
 
+from functools import reduce
+
 from sbi.radio_device.events import PacketLossEvent
 from uniflex.core import modules
 from uniflex.core import events
@@ -191,7 +193,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                 
                 for flow in device.my_control_flow:
                     flow['old'] = True
-                print("send getIface!")
+                
                 for interface in device.get_interfaces():
                     infos = device.get_info_of_connected_devices(interface)
                     
@@ -399,7 +401,9 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     # game over if there is a new interface
     def get_gameOver(self):
         clients = self._create_client_list()
-        return len(set(clients).symmetric_difference(set(self.observationSpace))) == 0
+        clientHash = [i['mac'] + i['node'] + i['device'] + i['iface'] for i in clients]
+        observationSpaceHash = [i['mac'] + i['node'] + i['device'] + i['iface'] for i in self.observationSpace]
+        return not len(set(clientHash).symmetric_difference(set(observationSpaceHash))) == 0
     
     def get_reward(self):
         if len(self.lastObservation) > 0:

@@ -8,6 +8,8 @@ import UniFlexGym
 import numpy as np
 #from tensorflow import keras
 import argparse
+import logging
+
 
 parser = argparse.ArgumentParser(description='Uniflex reader')
 parser.add_argument('--config', help='path to the uniflex config file', default=None)
@@ -20,15 +22,20 @@ if not args.config:
 env = gym.make('uniflex-v0')
 #env.configure()
 env.start_controller(steptime=10, config=args.config)
-print ("before reset")
-env.reset()
-print ("after reset")
+
 
 n = 0
 
 while True:
-    env.step([])
-    print ("next step")
+    print ("reset")
+    env.reset()
+    gameover = False
+    
+    while not gameover:
+        ob, reward, gameover, info = env.step([])
+        print (ob)
+        print (gameover)
+        print ("next step")
 
 '''
 ob_space = env.observation_space
