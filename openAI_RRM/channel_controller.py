@@ -1,6 +1,7 @@
 import logging
 import datetime
 import random
+import numpy
 
 from functools import reduce
 
@@ -10,6 +11,8 @@ from uniflex.core import events
 from uniflex.core.timer import TimerEventSender
 from common import AveragedSpectrumScanSampleEvent
 from common import ChangeWindowSizeEvent
+
+from gym import spaces
 
 from UniFlexGym.interfaces.uniflex_controller import UniFlexController
 
@@ -371,26 +374,34 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         return
     
     def execute_action(self, action):
-        for index, actionStep in enumerate(action):
-            interface = self.actionSpace[index]
-            self.set_channel(interface['node'], interface['device'], interface['iface'], actionStep, None)
+        try:
+            for index, actionStep in enumerate(action):
+                interface = self.actionSpace[index]
+                self.set_channel(interface['node'], interface['device'], interface['iface'], actionStep*4+1, None)
+        except TypeError:
+            interface = self.actionSpace[0]
+            self.set_channel(interface['node'], interface['device'], interface['iface'], action*4+1, None)
         return
     
     def render():
         return
     
     def get_observationSpace(self):
-        return
+        return spaces.Box(low=0, high=10000000, shape=(len(self.observationSpace),), dtype=numpy.float32)
     
     def get_actionSpace(self):
-        return
+        maxValues = [4 for i in self.actionSpace]
+        return spaces.MultiDiscrete(maxValues)
     
     def get_observation(self):
+        # for simulation
+        self.simulate_flows()
+        
         observation  = []
         bandwidthList = self.get_bandwidth()
         #bandwidth = sorted(bandwidth, key=lambda k: k['mac'])
         for client in self.observationSpace:
-            bandwidth = self. _get_bandwidth_by_client( bandwidthList, client)
+            bandwidth = self._get_bandwidth_by_client( bandwidthList, client)
             if bandwidth is None:
                 bandwidth = 0
             observation.append(bandwidth)
@@ -407,14 +418,14 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     
     def get_reward(self):
         if len(self.lastObservation) > 0:
-            return reduce(lambda x, y: x^2 + y, self.lastObservation)
+            return reduce(lambda x, y: x**2 + y, self.lastObservation)
         return 0
     
     
     
     def _get_bandwidth_by_client(self, bandwidthList, clientData):
         for mac, client in bandwidthList.items():
-            if (mac is clientData['mac']) and (client['node'] is clientData['node']) and (client['device'] is clientData['device']) and (client['iface'] is clientData['iface']):
+            if (mac == clientData['mac']) and (client['node']['uuid'] == clientData['node']) and (client['device']['uuid'] == clientData['device']) and (client['interface'] == clientData['iface']):
                 return client['bandwidth']
         return None
     

@@ -3,12 +3,13 @@
 
 import gym
 import UniFlexGym
-#import tensorflow as tf
-#import tensorflow.contrib.slim as slim
+import tensorflow as tf
+import tensorflow.contrib.slim as slim
 import numpy as np
-#from tensorflow import keras
+from tensorflow import keras
 import argparse
 import logging
+import time
 
 
 parser = argparse.ArgumentParser(description='Uniflex reader')
@@ -21,21 +22,84 @@ if not args.config:
 #create uniflex environment, steptime is 10sec
 env = gym.make('uniflex-v0')
 #env.configure()
-env.start_controller(steptime=10, config=args.config)
+env.start_controller(steptime=1, config=args.config)
 
 
 n = 0
 
 while True:
     print ("reset")
-    env.reset()
+    state = env.reset()
     gameover = False
     
+    '''
+    code (c) piotr
+    '''
+    ob_space = env.observation_space
+    ac_space = env.action_space
+    
+    
+    print("Observation space: ", ob_space,  ob_space.dtype)
+    print("Action space: ", ac_space, ac_space.nvec)
+    
+    s_size = ob_space.shape[0]
+    a_size = ac_space.nvec
+    if(s_size < 1 or len(a_size) < 1):
+        print("No client registered - retry")
+        continue
+    state = np.reshape(state, [1, s_size])
+    model = keras.Sequential()
+    model.add(keras.layers.Dense(s_size, input_shape=(s_size,), activation='relu'))
+    model.add(keras.layers.Dense(a_size, activation='softmax'))
+    model.compile(optimizer=tf.train.AdamOptimizer(0.001),
+                  loss='categorical_crossentropy',
+                  metrics=['accuracy'])
+    epsilon = 1.0               # exploration rate
+    epsilon_min = 0.01
+    epsilon_decay = 0.999
+    rewardsum = 0
+    time_history = []
+    rew_history = []
+    e = 0
+    
     while not gameover:
-        ob, reward, gameover, info = env.step([])
-        print (ob)
-        print (gameover)
+        # Choose action
+        if np.random.rand(1) < epsilon:
+            action = np.random.randint(a_size)
+        else:
+            action = np.argmax(model.predict(state)[0])
+        
+        # Step
+        next_state, reward, gameover, _ = env.step(action)
+        
+        if gameover:
+            print("episode: {}, rew: {}, eps: {:.2}"
+                  .format(e, rewardsum, epsilon))
+            break
+        
+        next_state = np.reshape(next_state, [1, s_size])
+        
+        # Train
+        target = reward
+        if not gameover:
+            target = (reward + 0.95 * np.amax(model.predict(next_state)[0]))
+        
+        target_f = model.predict(state)
+        target_f[0][action] = target
+        model.fit(state, target_f, epochs=1, verbose=0)
+        
+        state = next_state
+        rewardsum += reward
+        if epsilon > epsilon_min: epsilon *= epsilon_decay
+        
+        rew_history.append(rewardsum)
+        print ("Bandwidth: " + str(next_state))
+        print ("Reward: " + str(reward))
+        print ("GameOver: " + str(gameover))
+        print ("Channel selection:" + str(action))
         print ("next step")
+        
+        e += 1
 
 '''
 ob_space = env.observation_space
