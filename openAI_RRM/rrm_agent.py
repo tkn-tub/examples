@@ -10,6 +10,8 @@ from tensorflow import keras
 import argparse
 import logging
 import time
+import matplotlib.pyplot as plt
+from math import *
 
 
 parser = argparse.ArgumentParser(description='Uniflex reader')
@@ -24,82 +26,111 @@ env = gym.make('uniflex-v0')
 #env.configure()
 env.start_controller(steptime=1, config=args.config)
 
+epsilon = 1.0               # exploration rate
+epsilon_min = 0.01
+epsilon_decay = 0.99
 
-n = 0
+time_history = []
+rew_history = []
+
+numChannels = 2
+episode = 0
 
 while True:
-    print ("reset")
+    run = 0
+    rewards = []
+    actions = []
+    
     state = env.reset()
-    gameover = False
-    
-    '''
-    code (c) piotr
-    '''
-    ob_space = env.observation_space
+    n = 0
     ac_space = env.action_space
-    
-    
+    ob_space = env.observation_space
     print("Observation space: ", ob_space,  ob_space.dtype)
-    print("Action space: ", ac_space, ac_space.nvec)
-    
+    print("Action space: ", ac_space, ac_space.n)
+
     s_size = ob_space.shape[0]
-    a_size = ac_space.nvec
-    if(s_size < 1 or len(a_size) < 1):
-        print("No client registered - retry")
-        continue
-    state = np.reshape(state, [1, s_size])
+    a_size = ac_space.n
     model = keras.Sequential()
     model.add(keras.layers.Dense(s_size, input_shape=(s_size,), activation='relu'))
+    model.add(keras.layers.Dense(5, activation='relu'))
     model.add(keras.layers.Dense(a_size, activation='softmax'))
     model.compile(optimizer=tf.train.AdamOptimizer(0.001),
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
-    epsilon = 1.0               # exploration rate
-    epsilon_min = 0.01
-    epsilon_decay = 0.999
-    rewardsum = 0
-    time_history = []
-    rew_history = []
-    e = 0
     
-    while not gameover:
+    state = np.reshape(state, [1, s_size])
+    rewardsum = 0
+    done = False
+    
+    if a_size == 0:
+        print("there is no vaild AP - sleep 10 seconds")
+        time.sleep(2)
+        continue
+    
+    aps = int(log(a_size, numChannels))
+    
+    for i in range(0, aps):
+        actions.append([])
+    
+    while not done:
         # Choose action
+        #epsilon = 1
         if np.random.rand(1) < epsilon:
             action = np.random.randint(a_size)
         else:
             action = np.argmax(model.predict(state)[0])
-        
+
         # Step
-        next_state, reward, gameover, _ = env.step(action)
+        next_state, reward, done, _ = env.step(action)
         
-        if gameover:
-            print("episode: {}, rew: {}, eps: {:.2}"
-                  .format(e, rewardsum, epsilon))
+        reward /= 1000
+
+        if done:
+        #    print("episode: {}/{}, time: {}, rew: {}, eps: {:.2}"
+        #          .format(e, total_episodes, time, rewardsum, epsilon))
             break
-        
+
         next_state = np.reshape(next_state, [1, s_size])
-        
+
         # Train
         target = reward
-        if not gameover:
-            target = (reward + 0.95 * np.amax(model.predict(next_state)[0]))
+        if not done:
+            target = (reward)# + 0.95 * np.amax(model.predict(next_state)[0]))
         
+        print(target)
+
         target_f = model.predict(state)
         target_f[0][action] = target
         model.fit(state, target_f, epochs=1, verbose=0)
-        
+
         state = next_state
-        rewardsum += reward
+        #rewardsum += reward
         if epsilon > epsilon_min: epsilon *= epsilon_decay
         
-        rew_history.append(rewardsum)
-        print ("Bandwidth: " + str(next_state))
+        rewards.append(reward)
+        
+        for ap in range(0, aps):
+            ifaceaction = int(action / (pow(numChannels, ap)))
+            ifaceaction = ifaceaction % numChannels
+            actions[ap].append(ifaceaction)
+        
         print ("Reward: " + str(reward))
-        print ("GameOver: " + str(gameover))
+        print ("GameOver: " + str(done))
+        print ("Next Channels: " + str(next_state))
         print ("Channel selection:" + str(action))
         print ("next step")
         
-        e += 1
+        plt.subplot(211)
+        plt.plot(rewards)
+        plt.subplot(212)
+        for ap in range(0, aps):
+            plt.plot(actions[ap])
+        plt.pause(0.05)
+        
+        run += 1
+        
+    episode += 1
+
 
 '''
 ob_space = env.observation_space

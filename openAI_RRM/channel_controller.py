@@ -2,6 +2,7 @@ import logging
 import datetime
 import random
 import numpy
+from math import *
 
 from functools import reduce
 
@@ -21,6 +22,7 @@ __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
 __version__ = "0.1.0"
 __email__ = "{gawlowicz}@tkn.tu-berlin.de, s.resler@campus.tu-berlin.de"
 
+numChannels = 2
 
 class PeriodicEvaluationTimeEvent(events.TimeEvent):
     def __init__(self):
@@ -41,7 +43,9 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         self.channel = 1
         
         self.observationSpace = []
+        self.registeredClients = self._create_client_list()
         self.lastObservation = []
+        self.actionSet = []
         
 #        if not "openAI_controller" in kwargs:
 #            raise ValueError("There is no OpenAI gym controller specified. Can not #find \"" + "openAI_controller" + "\" as kwargs in the config file.")
@@ -305,9 +309,9 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                     chnum = device.get_channel(interface)
                     chw = device.get_channel_width(interface)
                     infos = device.get_info_of_connected_devices(interface)
+                    mac = device.get_address()
                     
-                    for mac in infos:
-                        flows.append({'mac address' : mac, 'channel number' : chnum, 'channel width' : chw, 'iface': interface})
+                    flows.append({'mac address' : mac, 'channel number' : chnum, 'channel width' : chw, 'iface': interface})
                 
         for node in self.get_nodes():
             for device  in node.get_devices():
@@ -354,8 +358,13 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     
     
     def reset(self):
-        self.observationSpace = self._create_client_list()
-        self.actionSpace = self._create_interface_list()
+        self.registeredClients = self._create_client_list()
+        self.observationSpace = self.get_observationSpace()
+        self.actionSpace = self.get_actionSpace()
+        self.actionSet = []
+        
+        #for index in range(actionSpace):
+            
         
         interfaces = self.get_interfaces()
         
@@ -370,56 +379,61 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                     if channel > 12:
                         channel = 1
         # clear bandwidth counter
+        self.simulate_flows()
         self.get_bandwidth()
         return
     
     def execute_action(self, action):
-        try:
-            for index, actionStep in enumerate(action):
-                interface = self.actionSpace[index]
-                self.set_channel(interface['node'], interface['device'], interface['iface'], actionStep*4+1, None)
-        except TypeError:
-            interface = self.actionSpace[0]
-            self.set_channel(interface['node'], interface['device'], interface['iface'], action*4+1, None)
+        for index, interface in enumerate(self._create_interface_list()):
+            ifaceaction = int(action / (pow(numChannels,index)))
+            ifaceaction = ifaceaction % numChannels
+            self.set_channel(interface['node'], interface['device'], interface['iface'], ifaceaction*numChannels+1, None)
+        #try:
+        #    for index, actionStep in enumerate(action):
+        #        interface = self.actionSpace[index]
+        #        self.set_channel(interface['node'], interface['device'], interface['iface'], actionStep*4+1, None)
+        #except TypeError:
+        #    interface = self.actionSpace[0]
+        #    self.set_channel(interface['node'], interface['device'], interface['iface'], action*4+1, None)
         return
     
     def render():
         return
     
     def get_observationSpace(self):
-        return spaces.Box(low=0, high=10000000, shape=(len(self.observationSpace),), dtype=numpy.float32)
+        maxValues = [numChannels for i in self._create_interface_list()]
+        #return spaces.Box(low=0, high=numChannels, shape=(len(self._create_interface_list()),0), dtype=numpy.float32)
+        return spaces.MultiDiscrete(maxValues)
+        #spaces.Box(low=0, high=10000000, shape=(len(self.observationSpace),), dtype=numpy.float32)
     
     def get_actionSpace(self):
-        maxValues = [4 for i in self.actionSpace]
-        return spaces.MultiDiscrete(maxValues)
+        if len(self._create_interface_list()) == 0:
+            return spaces.Discrete(0)
+        return spaces.Discrete(pow(numChannels, len(self._create_interface_list())))
     
     def get_observation(self):
-        # for simulation
-        self.simulate_flows()
-        
-        observation  = []
-        bandwidthList = self.get_bandwidth()
-        #bandwidth = sorted(bandwidth, key=lambda k: k['mac'])
-        for client in self.observationSpace:
-            bandwidth = self._get_bandwidth_by_client( bandwidthList, client)
-            if bandwidth is None:
-                bandwidth = 0
-            observation.append(bandwidth)
-        
-        self.lastObservation = observation
+        channels = self.get_channels()
+        observation = list(map(lambda x: (x['channel number']-1) / numChannels, channels))
         return observation
     
     # game over if there is a new interface
     def get_gameOver(self):
         clients = self._create_client_list()
         clientHash = [i['mac'] + i['node'] + i['device'] + i['iface'] for i in clients]
-        observationSpaceHash = [i['mac'] + i['node'] + i['device'] + i['iface'] for i in self.observationSpace]
+        observationSpaceHash = [i['mac'] + i['node'] + i['device'] + i['iface'] for i in self.registeredClients]
         return not len(set(clientHash).symmetric_difference(set(observationSpaceHash))) == 0
     
     def get_reward(self):
-        if len(self.lastObservation) > 0:
-            return reduce(lambda x, y: x**2 + y, self.lastObservation)
-        return 0
+        # for simulation
+        self.simulate_flows()
+        
+        bandwidthList = self.get_bandwidth()
+        #bandwidth = sorted(bandwidth, key=lambda k: k['mac'])
+        reward = 0
+        for key in bandwidthList:
+            item = bandwidthList[key]
+            reward += sqrt(item['bandwidth'])
+        return reward
     
     
     

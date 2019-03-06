@@ -21,5 +21,7 @@ modules:
       module : uniflex_module_simple
       class_name : SimpleModule4
       devices : ['phy0']
-      kwargs : { "MAC_List" : ["38:10:d5:9a:0b:60"]}
+      kwargs : { "clients" : ["cc:cc:cc:cc:cc:11", "cc:cc:cc:cc:cc:12"], 
+        'neighbors' : ['aa:aa:aa:aa:aa:01', 'aa:aa:aa:aa:aa:03'],
+        'myMAC' : 'aa:aa:aa:aa:aa:02'}
 
