@@ -23,5 +23,6 @@ modules:
       devices : ['phy0']
       kwargs : { "clients" : ["cc:cc:cc:cc:cc:01", "cc:cc:cc:cc:cc:02"], 
         'neighbors' : ['aa:aa:aa:aa:aa:02', 'aa:aa:aa:aa:aa:03'],
-        'myMAC' : 'aa:aa:aa:aa:aa:01'}
+        'myMAC' : 'aa:aa:aa:aa:aa:01',
+        'simulation': {'channelSwitchingTime': 200, 'channelThroughput':54e6, 'txBytesRandom':0.2}}
 
