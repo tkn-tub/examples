@@ -22,8 +22,6 @@ __copyright__ = "Copyright (c) 2016, Technische Universität Berlin"
 __version__ = "0.1.0"
 __email__ = "{gawlowicz}@tkn.tu-berlin.de, s.resler@campus.tu-berlin.de"
 
-numChannels = 2
-
 class PeriodicEvaluationTimeEvent(events.TimeEvent):
     def __init__(self):
         super().__init__()
@@ -41,11 +39,14 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
 
         self.packetLossEventsEnabled = False
         self.channel = 1
-        
+        self.numChannels = 2
         self.observationSpace = []
         self.registeredClients = self._create_client_list()
         self.lastObservation = []
         self.actionSet = []
+        
+        if 'numChannels' in kwargs:
+            self.numChannels = kwargs['numChannels']
         
 #        if not "openAI_controller" in kwargs:
 #            raise ValueError("There is no OpenAI gym controller specified. Can not #find \"" + "openAI_controller" + "\" as kwargs in the config file.")

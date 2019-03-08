@@ -17,7 +17,8 @@ control_applications:
       class_name : UniflexChannelController
       openAIGymController: True
       kwargs : {
-            'openAI_controller': "openAI_gym.rrm_agent"
+            'openAI_controller': "openAI_gym.rrm_agent",
+            'numChannels' : 2
       }
 
 modules:
