@@ -28,7 +28,8 @@ env.start_controller(steptime=1, config=args.config)
 
 epsilon = 1.0               # exploration rate
 epsilon_min = 0.01
-epsilon_decay = 0.99
+#epsilon_decay = 0.99
+epsilon_decay = 0.995
 
 time_history = []
 rew_history = []
@@ -38,6 +39,7 @@ episode = 0
 
 while True:
     run = 0
+    runs = []
     rewards = []
     actions = []
     
@@ -121,10 +123,14 @@ while True:
         print ("next step")
         
         plt.subplot(211)
-        plt.plot(rewards)
+        plt.plot(run, reward, 'bo')                 # Additional point
+        plt.ylabel('reward')
         plt.subplot(212)
-        for ap in range(0, aps):
-            plt.plot(actions[ap])
+        #for ap in range(0, aps):
+        #    plt.plot(actions[ap])
+        plt.plot(run, action, 'bo')                 # Additional point
+        plt.ylabel('action')
+        plt.xlabel('step')
         plt.pause(0.05)
         
         run += 1

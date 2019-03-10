@@ -10,6 +10,5 @@ python3 rrm_agent.py --config ./config_master.yaml
 # 2c. Run modules in slave node:
 uniflex-agent --config ./config_slave.yaml
 uniflex-agent --config ./config_slave2.yaml
-uniflex-agent --config ./config_slave3.yaml
 
 # For debugging mode run with -v option

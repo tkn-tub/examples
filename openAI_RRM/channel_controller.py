@@ -386,9 +386,9 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     
     def execute_action(self, action):
         for index, interface in enumerate(self._create_interface_list()):
-            ifaceaction = int(action / (pow(numChannels,index)))
-            ifaceaction = ifaceaction % numChannels
-            self.set_channel(interface['node'], interface['device'], interface['iface'], ifaceaction*numChannels+1, None)
+            ifaceaction = int(action / (pow(self.numChannels,index)))
+            ifaceaction = ifaceaction % self.numChannels
+            self.set_channel(interface['node'], interface['device'], interface['iface'], ifaceaction*self.numChannels+1, None)
         #try:
         #    for index, actionStep in enumerate(action):
         #        interface = self.actionSpace[index]
@@ -402,7 +402,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         return
     
     def get_observationSpace(self):
-        maxValues = [numChannels for i in self._create_interface_list()]
+        maxValues = [self.numChannels for i in self._create_interface_list()]
         #return spaces.Box(low=0, high=numChannels, shape=(len(self._create_interface_list()),0), dtype=numpy.float32)
         return spaces.MultiDiscrete(maxValues)
         #spaces.Box(low=0, high=10000000, shape=(len(self.observationSpace),), dtype=numpy.float32)
@@ -410,11 +410,11 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     def get_actionSpace(self):
         if len(self._create_interface_list()) == 0:
             return spaces.Discrete(0)
-        return spaces.Discrete(pow(numChannels, len(self._create_interface_list())))
+        return spaces.Discrete(pow(self.numChannels, len(self._create_interface_list())))
     
     def get_observation(self):
         channels = self.get_channels()
-        observation = list(map(lambda x: (x['channel number']-1) / numChannels, channels))
+        observation = list(map(lambda x: (x['channel number']-1) / self.numChannels, channels))
         return observation
     
     # game over if there is a new interface
