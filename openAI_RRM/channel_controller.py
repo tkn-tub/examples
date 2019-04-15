@@ -2,6 +2,7 @@ import logging
 import datetime
 import random
 import numpy
+import sys
 from math import *
 
 from functools import reduce
@@ -31,6 +32,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     def __init__(self,**kwargs):
         super(UniflexChannelController, self).__init__()
         self.log = logging.getLogger('ChannelController')
+        logging.basicConfig(stream=sys.stdout, level=logging.INFO)
         self.running = False
 
         self.timeInterval = 10
@@ -39,14 +41,14 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
 
         self.packetLossEventsEnabled = False
         self.channel = 1
-        self.numChannels = 2
+        self.availableChannels = []
         self.observationSpace = []
         self.registeredClients = self._create_client_list()
         self.lastObservation = []
         self.actionSet = []
         
-        if 'numChannels' in kwargs:
-            self.numChannels = kwargs['numChannels']
+        if 'availableChannels' in kwargs:
+            self.availableChannels = kwargs['availableChannels']
         
 #        if not "openAI_controller" in kwargs:
 #            raise ValueError("There is no OpenAI gym controller specified. Can not #find \"" + "openAI_controller" + "\" as kwargs in the config file.")
@@ -386,9 +388,10 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     
     def execute_action(self, action):
         for index, interface in enumerate(self._create_interface_list()):
-            ifaceaction = int(action / (pow(self.numChannels,index)))
-            ifaceaction = ifaceaction % self.numChannels
-            self.set_channel(interface['node'], interface['device'], interface['iface'], ifaceaction*self.numChannels+1, None)
+            ifaceaction = int(action / (pow(len(self.availableChannels),index)))
+            ifaceaction = ifaceaction % len(self.availableChannels)
+            self.set_channel(interface['node'], interface['device'], interface['iface'],
+                                self.availableChannels[ifaceaction], None)
         #try:
         #    for index, actionStep in enumerate(action):
         #        interface = self.actionSpace[index]
@@ -402,19 +405,24 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         return
     
     def get_observationSpace(self):
-        maxValues = [self.numChannels for i in self._create_interface_list()]
+        maxValues = [len(self.availableChannels) for i in self._create_interface_list()]
         #return spaces.Box(low=0, high=numChannels, shape=(len(self._create_interface_list()),0), dtype=numpy.float32)
         return spaces.MultiDiscrete(maxValues)
         #spaces.Box(low=0, high=10000000, shape=(len(self.observationSpace),), dtype=numpy.float32)
     
     def get_actionSpace(self):
-        if len(self._create_interface_list()) == 0:
+        interfaceList = self._create_interface_list();
+        if(len(interfaceList) > 0):
+            self.log.info("UUIDs of the action space")
+        for key, interface in enumerate(interfaceList):
+            self.log.info(str(key) + ":" + interface['device'])
+        if len(interfaceList) == 0:
             return spaces.Discrete(0)
-        return spaces.Discrete(pow(self.numChannels, len(self._create_interface_list())))
+        return spaces.Discrete(pow(len(self.availableChannels), len(interfaceList)))
     
     def get_observation(self):
         channels = self.get_channels()
-        observation = list(map(lambda x: (x['channel number']-1) / self.numChannels, channels))
+        observation = list(map(lambda x: x['channel number'], channels))
         return observation
     
     # game over if there is a new interface

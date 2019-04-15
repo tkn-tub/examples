@@ -17,7 +17,7 @@ control_applications:
       class_name : UniflexChannelController
       openAIGymController: True
       kwargs : {
-            'numChannels' : 2
+            'availableChannels' : [1,5]
       }
 
 modules:
