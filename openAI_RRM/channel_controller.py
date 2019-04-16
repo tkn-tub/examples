@@ -46,9 +46,13 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         self.registeredClients = self._create_client_list()
         self.lastObservation = []
         self.actionSet = []
+        self.simulation = False
         
         if 'availableChannels' in kwargs:
             self.availableChannels = kwargs['availableChannels']
+        
+        if 'simulation' in kwargs:
+            self.simulation = kwargs['simulation']
         
 #        if not "openAI_controller" in kwargs:
 #            raise ValueError("There is no OpenAI gym controller specified. Can not #find \"" + "openAI_controller" + "\" as kwargs in the config file.")
@@ -382,7 +386,8 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                     if channel > 12:
                         channel = 1
         # clear bandwidth counter
-        self.simulate_flows()
+        if(self.simulation):
+            self.simulate_flows()
         self.get_bandwidth()
         return
     
@@ -434,7 +439,8 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     
     def get_reward(self):
         # for simulation
-        self.simulate_flows()
+        if(self.simulation):
+            self.simulate_flows()
         
         bandwidthList = self.get_bandwidth()
         #bandwidth = sorted(bandwidth, key=lambda k: k['mac'])

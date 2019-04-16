@@ -1,0 +1,32 @@
+## UniFlex Agent config file
+
+config:
+  name: "Global_Controller"
+  info: 'agent hosts global controller'
+  iface: 'lo'
+  sub: "tcp://127.0.0.1:8990"
+  pub: "tcp://127.0.0.1:8989"
+
+broker:
+  xpub: "tcp://127.0.0.1:8990"
+  xsub: "tcp://127.0.0.1:8989"
+
+control_applications:
+  myController:
+      file : channel_controller.py
+      class_name : UniflexChannelController
+      openAIGymController: True
+      kwargs : {
+            'availableChannels' : [1,5],
+            'simulation': True
+      }
+
+modules:
+  discovery:
+        module : uniflex_app_discovery_pyre
+        class_name : PyreDiscoveryMasterModule
+        kwargs: {"iface":"lo",
+                 "groupName":"uniflex_1234",
+                 "sub":"tcp://127.0.0.1:8990",
+                 "pub":"tcp://127.0.0.1:8989"
+                }
