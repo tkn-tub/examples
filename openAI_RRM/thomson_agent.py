@@ -10,16 +10,20 @@ import numpy as np
 import argparse
 import logging
 import time
+import csv
 import matplotlib.pyplot as plt
 from math import *
 
 
 parser = argparse.ArgumentParser(description='Uniflex reader')
 parser.add_argument('--config', help='path to the uniflex config file', default=None)
+parser.add_argument('--output', help='path to a csv file for agent output data', default=None)
 args = parser.parse_args()
 if not args.config:
     print("No config file specified!")
     quit()
+if not args.output:
+    print("No output file specified! - Skip data")
 
 #create uniflex environment, steptime is 10sec
 env = gym.make('uniflex-v0')
@@ -89,6 +93,12 @@ while True:
         
         # statistics
         rewards.append(reward)
+        
+        if args.output:
+            with open(args.output, 'a') as csvFile:
+                writer = csv.writer(csvFile)
+                writer.writerow([reward, action])
+            csvFile.close()
         
         for ap in range(0, aps):
             ifaceaction = int(action / (pow(numChannels, ap)))
