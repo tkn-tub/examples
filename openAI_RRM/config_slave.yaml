@@ -4,6 +4,13 @@ config:
   name: 'HC node'
   info: 'filter runs on local node'
   iface: 'lo'
+  iface: 'lo'
+  sub: "tcp://127.0.0.1:8990"
+  pub: "tcp://127.0.0.1:8989"
+
+broker:
+  xpub: "tcp://127.0.0.1:8990"
+  xsub: "tcp://127.0.0.1:8989"
 
 control_applications:
   myFilter:
