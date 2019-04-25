@@ -11,19 +11,22 @@ import argparse
 import logging
 import time
 import csv
-import matplotlib.pyplot as plt
 from math import *
 
 
 parser = argparse.ArgumentParser(description='Uniflex reader')
 parser.add_argument('--config', help='path to the uniflex config file', default=None)
 parser.add_argument('--output', help='path to a csv file for agent output data', default=None)
+parser.add_argument('--plot', help='activate plotting', default=None)
 args = parser.parse_args()
 if not args.config:
     print("No config file specified!")
     quit()
 if not args.output:
     print("No output file specified! - Skip data")
+
+if args.plot
+    import matplotlib.pyplot as plt
 
 #create uniflex environment, steptime is 10sec
 env = gym.make('uniflex-v0')
@@ -133,16 +136,17 @@ while True:
         print ("Channel selection:" + str(action))
         print ("next step")
         
-        plt.subplot(211)
-        plt.plot(run, reward, 'bo')                 # Additional point
-        plt.ylabel('reward')
-        plt.subplot(212)
-        #for ap in range(0, aps):
-        #    plt.plot(actions[ap])
-        plt.plot(run, action, 'bo')                 # Additional point
-        plt.ylabel('action')
-        plt.xlabel('step')
-        plt.pause(0.05)
+        if args.plot:
+            plt.subplot(211)
+            plt.plot(run, reward, 'bo')                 # Additional point
+            plt.ylabel('reward')
+            plt.subplot(212)
+            #for ap in range(0, aps):
+            #    plt.plot(actions[ap])
+            plt.plot(run, action, 'bo')                 # Additional point
+            plt.ylabel('action')
+            plt.xlabel('step')
+            plt.pause(0.05)
         
         run += 1
         
