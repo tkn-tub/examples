@@ -25,7 +25,7 @@ if not args.config:
 if not args.output:
     print("No output file specified! - Skip data")
 
-if args.plot
+if args.plot:
     import matplotlib.pyplot as plt
 
 #create uniflex environment, steptime is 10sec
