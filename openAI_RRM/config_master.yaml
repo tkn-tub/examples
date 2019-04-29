@@ -4,12 +4,12 @@ config:
   name: "Global_Controller"
   info: 'agent hosts global controller'
   iface: 'lo'
-  sub: "tcp://127.0.0.1:8990"
-  pub: "tcp://127.0.0.1:8989"
+  sub: "tcp://192.168.10.157:8990"
+  pub: "tcp://192.168.10.157:8989"
 
 broker:
-  xpub: "tcp://127.0.0.1:8990"
-  xsub: "tcp://127.0.0.1:8989"
+  xpub: "tcp://192.168.10.157:8990"
+  xsub: "tcp://192.168.10.157:8989"
 
 control_applications:
   myController:
@@ -26,6 +26,6 @@ modules:
         class_name : PyreDiscoveryMasterModule
         kwargs: {"iface":"lo",
                  "groupName":"uniflex_1234",
-                 "sub":"tcp://127.0.0.1:8990",
-                 "pub":"tcp://127.0.0.1:8989"
+                 "sub":"tcp://192.168.10.157:8990",
+                 "pub":"tcp://192.168.10.157:8989"
                 }
