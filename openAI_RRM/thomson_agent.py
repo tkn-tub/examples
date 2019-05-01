@@ -3,21 +3,23 @@
 
 import gym
 import UniFlexGym
-import tensorflow as tf
-import tensorflow.contrib.slim as slim
+#import tensorflow as tf
+#import tensorflow.contrib.slim as slim
 import numpy as np
 #from tensorflow import keras
 import argparse
 import logging
 import time
 import csv
-import matplotlib.pyplot as plt
 from math import *
 
 
 parser = argparse.ArgumentParser(description='Uniflex reader')
 parser.add_argument('--config', help='path to the uniflex config file', default=None)
 parser.add_argument('--output', help='path to a csv file for agent output data', default=None)
+parser.add_argument('--plot', help='activate plotting', default=None)
+parser.add_argument('--steptime', help='interval between two steps', default=1)
+
 args = parser.parse_args()
 if not args.config:
     print("No config file specified!")
@@ -25,10 +27,14 @@ if not args.config:
 if not args.output:
     print("No output file specified! - Skip data")
 
+if args.plot:
+    import matplotlib.pyplot as plt
+
+
 #create uniflex environment, steptime is 10sec
 env = gym.make('uniflex-v0')
 #env.configure()
-env.start_controller(steptime=1, config=args.config)
+env.start_controller(steptime=int(args.steptime), config=args.config)
 
 epsilon = 1.0               # exploration rate
 epsilon_min = 0.01
@@ -112,16 +118,17 @@ while True:
         print ("Average:" + str(avg))
         print ("next step")
         
-        plt.subplot(211)
-        plt.plot(run, reward, 'bo')                 # Additional point
-        plt.ylabel('reward')
-        plt.subplot(212)
-        #for ap in range(0, aps):
-        #    plt.plot(actions[ap])
-        plt.plot(run, action, 'bo')                 # Additional point
-        plt.ylabel('action')
-        plt.xlabel('step')
-        plt.pause(0.05)
+        if args.plot:
+            plt.subplot(211)
+            plt.plot(run, reward, 'bo')                 # Additional point
+            plt.ylabel('reward')
+            plt.subplot(212)
+            #for ap in range(0, aps):
+            #    plt.plot(actions[ap])
+            plt.plot(run, action, 'bo')                 # Additional point
+            plt.ylabel('action')
+            plt.xlabel('step')
+            plt.pause(0.05)
         
         run += 1
         

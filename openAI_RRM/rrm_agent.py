@@ -18,6 +18,8 @@ parser = argparse.ArgumentParser(description='Uniflex reader')
 parser.add_argument('--config', help='path to the uniflex config file', default=None)
 parser.add_argument('--output', help='path to a csv file for agent output data', default=None)
 parser.add_argument('--plot', help='activate plotting', default=None)
+parser.add_argument('--steptime', help='interval between two steps', default=1)
+
 args = parser.parse_args()
 if not args.config:
     print("No config file specified!")
@@ -31,7 +33,7 @@ if args.plot:
 #create uniflex environment, steptime is 10sec
 env = gym.make('uniflex-v0')
 #env.configure()
-env.start_controller(steptime=1, config=args.config)
+env.start_controller(steptime=args.steptime, config=args.config)
 
 epsilon = 1.0               # exploration rate
 epsilon_min = 0.01
