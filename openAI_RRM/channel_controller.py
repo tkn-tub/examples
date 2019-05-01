@@ -173,9 +173,9 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         if device is None:
             return False
         if channel_width is not None:
-            device.blocking(False).set_channel(channel_number, ifaceName, channel_width= channel_width)
+            device.blocking(False).set_channel(channel_number, ifaceName, channel_width= channel_width, control_socket_path='/var/run/hostapd')
         else:
-            device.blocking(False).set_channel(channel_number, ifaceName)
+            device.blocking(False).set_channel(channel_number, ifaceName, control_socket_path='/var/run/hostapd')
         return True
 
     '''

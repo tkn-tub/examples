@@ -66,8 +66,10 @@ while True:
     model.compile(optimizer=tf.train.AdamOptimizer(0.001),
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
-    
-    state = np.reshape(state, [1, s_size])
+    try:
+        state = np.reshape(state, [1, s_size])
+    except ValueError:
+        continue
     rewardsum = 0
     done = False
     
