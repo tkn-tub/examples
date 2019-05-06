@@ -19,6 +19,7 @@ parser.add_argument('--config', help='path to the uniflex config file', default=
 parser.add_argument('--output', help='path to a csv file for agent output data', default=None)
 parser.add_argument('--plot', help='activate plotting', default=None)
 parser.add_argument('--steptime', help='interval between two steps', default=1)
+parser.add_argument('--steps', help='number of steps in this execution. If not set, the agents runs infinitly long', default=None)
 
 args = parser.parse_args()
 if not args.config:
@@ -153,6 +154,9 @@ while True:
             plt.pause(0.05)
         
         run += 1
+        
+        if args.steps and args.steps >= run:
+            quit()
         
     episode += 1
 
