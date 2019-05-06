@@ -11,6 +11,7 @@ import argparse
 import logging
 import time
 import csv
+import os
 from math import *
 
 
@@ -24,7 +25,7 @@ parser.add_argument('--steps', help='number of steps in this execution. If not s
 args = parser.parse_args()
 if not args.config:
     print("No config file specified!")
-    quit()
+    os._exit(1)
 if not args.output:
     print("No output file specified! - Skip data")
 
@@ -156,7 +157,7 @@ while True:
         run += 1
         
         if args.steps and int(args.steps) < run:
-            quit()
+            os._exit(1)
         
     episode += 1
 
