@@ -131,7 +131,7 @@ while True:
             plt.xlabel('step')
             plt.pause(0.05)
         
-        if args.steps and args.steps >= run:
+        if args.steps and int(args.steps) >= run:
             quit()
         
         run += 1

@@ -155,7 +155,7 @@ while True:
         
         run += 1
         
-        if args.steps and args.steps >= run:
+        if args.steps and int(args.steps) >= run:
             quit()
         
     episode += 1
