@@ -36,7 +36,7 @@ if args.plot:
 #create uniflex environment, steptime is 10sec
 env = gym.make('uniflex-v0')
 #env.configure()
-env.start_controller(steptime=int(args.steptime), config=args.config)
+env.start_controller(steptime=float(args.steptime), config=args.config)
 
 epsilon = 1.0               # exploration rate
 epsilon_min = 0.01
