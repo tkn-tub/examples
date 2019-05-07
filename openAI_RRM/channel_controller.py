@@ -447,6 +447,10 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         reward = 0
         for key in bandwidthList:
             item = bandwidthList[key]
+            if item['bandwidth'] < 0:
+                print("Bandwidth has invalid value: " + str(item['bandwidth']))
+                print(bandwidthList)
+                continue
             reward += sqrt(item['bandwidth'])
         return reward
     
