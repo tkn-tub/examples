@@ -36,8 +36,6 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         self.running = False
 
         self.timeInterval = 10
-#        self.timer = TimerEventSender(self, PeriodicEvaluationTimeEvent)
-#        self.timer.start(self.timeInterval)
 
         self.packetLossEventsEnabled = False
         self.channel = 1
@@ -53,14 +51,6 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         
         if 'simulation' in kwargs:
             self.simulation = kwargs['simulation']
-        
-#        if not "openAI_controller" in kwargs:
-#            raise ValueError("There is no OpenAI gym controller specified. Can not #find \"" + "openAI_controller" + "\" as kwargs in the config file.")
-#        else:
-#            __import__(kwargs["openAI_controller"], globals(), locals(), [], 0)
-#            splits = kwargs["openAI_controller"].split('.')
-#            class_name = splits[-1]
-#            self.openAI_controller = class_name(self, kwargs)
 
     @modules.on_start()
     def my_start_function(self):
@@ -167,8 +157,19 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         print("Scheduled get_channel; Power in "
               "Node: {}, Dev: {}, was set to: {}"
               .format(node.hostname, dev.name, msg))
-
+    
+    '''
+        Channel mapping controller
+    '''
     def set_channel(self, node_uuid, dev_uuid, ifaceName, channel_number, channel_width):
+        '''
+            Set one channel to one AP
+            :param node_uuid: UUID of AP node
+            :param dev_uuid: UUID of AP device
+            :param ifaceName: Name of AP interface
+            :param channel_number: Number of new channel
+            :param channel_width: Bandwidth of new channel
+        '''
         device = self._get_device_by_uuids(node_uuid, dev_uuid)
         if device is None:
             return False
@@ -178,27 +179,27 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             device.blocking(False).set_channel(channel_number, ifaceName, control_socket_path='/var/run/hostapd')
         return True
 
-    '''
-    Returns a list of the bandwidth of all transmitted data from one
-    controlled device to a client. The data is structured as follows:
-    {
-        'MAC_of_client1' : {
-            'mac' : 'MAC_of_client1',
-            'bandwidth': bandwidth to the client,
-            'node': {
-                'hostname': 'hostname of my AP node',
-                'uuid': 'uuid of my AP node'
-            },
-            'device': {
-                'name': 'device name of the AP's physical interface',
-                'uuid': 'uuid of the device',
-            },
-            'interface': 'name of the interface'
-        }
-    }
-    Notice: new devices have bandwidth 0!
-    '''
     def get_bandwidth(self):
+        '''
+            Returns a list of the bandwidth of all transmitted data from one
+            controlled device to a client. The data is structured as follows:
+            {
+                'MAC_of_client1' : {
+                    'mac' : 'MAC_of_client1',
+                    'bandwidth': bandwidth to the client,
+                    'node': {
+                        'hostname': 'hostname of my AP node',
+                        'uuid': 'uuid of my AP node'
+                    },
+                    'device': {
+                        'name': 'device name of the AP's physical interface',
+                        'uuid': 'uuid of the device',
+                    },
+                    'interface': 'name of the interface'
+                }
+            }
+            Notice: new devices have bandwidth 0!
+        '''
         bandwidth = {}
         for node in self.get_nodes():
             for device  in node.get_devices():
@@ -241,26 +242,26 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                         device.my_control_flow.remove(flow)
         return bandwidth
 
-    '''
-    Returns a data structure of all available interfaces in the system
-    It is structured as follows:
-    {
-        'uuid_of_node_1': {
-            'hostname' : 'hostname of node1',
-            'uuid' : 'uuid of node1',
-            'devices' : {
-                'name' : 'name of device1',
-                'uuid' : 'uuid of device1',
-                'interfaces' : [
-                    'name of iface1', 'name of iface2'
-                ]
-            },
-            ...
-        },
-        ...
-    }
-    '''
     def get_interfaces(self):
+        '''
+            Returns a data structure of all available interfaces in the system
+            It is structured as follows:
+            {
+                'uuid_of_node_1': {
+                    'hostname' : 'hostname of node1',
+                    'uuid' : 'uuid of node1',
+                    'devices' : {
+                        'name' : 'name of device1',
+                        'uuid' : 'uuid of device1',
+                        'interfaces' : [
+                            'name of iface1', 'name of iface2'
+                        ]
+                    },
+                    ...
+                },
+                ...
+            }
+        '''
         interfaces = {}
         for node in self.get_nodes():
             nodeinfo = {'hostname': node.hostname, 'uuid': node.uuid}
@@ -276,23 +277,23 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             interfaces[node.uuid] = nodeinfo
         return interfaces
 
-    '''
-    Collects and returns a list of the channel to interface mapping
-    [
-        {'channel number' : 'number of the channel',
-        'channel width' : 'width of the channel',
-        'node': {
-            'hostname': 'hostname of my AP node',
-            'uuid': 'uuid of my AP node'
-        },
-        'device': {
-            'name': 'device name of the AP's physical interface',
-            'uuid': 'uuid of the device',
-        },
-        'interface': 'name of the interface'
-    ]
-    '''
     def get_channels(self):
+        '''
+            Collects and returns a list of the channel to interface mapping
+            [
+                {'channel number' : 'number of the channel',
+                'channel width' : 'width of the channel',
+                'node': {
+                    'hostname': 'hostname of my AP node',
+                    'uuid': 'uuid of my AP node'
+                },
+                'device': {
+                    'name': 'device name of the AP's physical interface',
+                    'uuid': 'uuid of the device',
+                },
+                'interface': 'name of the interface'
+            ]
+        '''
         channel_mapping = []
         for node in self.get_nodes():
             for device  in node.get_devices():
@@ -309,7 +310,13 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         return channel_mapping
 
     def simulate_flows(self):
+        '''
+            Simulate packet counters on simulated APs 
+        '''
+        
         flows = []
+        
+        #collect state(channels and bandwidth) of all devices
         for node in self.get_nodes():
             for device  in node.get_devices():
                 for interface in device.get_interfaces():
@@ -319,7 +326,8 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                     mac = device.get_address()
                     
                     flows.append({'mac address' : mac, 'channel number' : chnum, 'channel width' : chw, 'iface': interface})
-                
+        
+        # simulate packet counter on AP modules
         for node in self.get_nodes():
             for device  in node.get_devices():
                 for interface in device.get_interfaces():
@@ -338,26 +346,8 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         self.reset()
         self.execute_action([1])
         print(self.get_observation())
-        '''
-        flows = []
-        
-        ifaces = self.get_interfaces()
-        node_uuid = list(ifaces.keys())[0]
-        dev_uuid  = list(ifaces[node_uuid]['devices'].keys())[0]
-        ifaceName = ifaces[node_uuid]['devices'][dev_uuid]['interfaces'][0]
-        
-        print(self.get_channels())
-        self.simulate_flows()
-        print(self.get_bandwidth())
-        
-        for node in self.get_nodes():
-            for device  in node.get_devices():
-                for interface in device.get_interfaces():
-                    self.set_channel(node.uuid, device.uuid, interface, self.channel, None)
-                    self.channel += 1
-                    if self.channel > 13:
-                        self.channel = 1
-        '''
+    
+    
     
     '''
     OpenAI Gym Uniflex env API
@@ -369,9 +359,6 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         self.observationSpace = self.get_observationSpace()
         self.actionSpace = self.get_actionSpace()
         self.actionSet = []
-        
-        #for index in range(actionSpace):
-            
         
         interfaces = self.get_interfaces()
         
@@ -392,30 +379,37 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         return
     
     def execute_action(self, action):
+        '''
+            Map scalar action to channel vector
+            channel value = (action/numberOfChannels^AP_id) mod numberOfChannels
+        '''
         for index, interface in enumerate(self._create_interface_list()):
             ifaceaction = int(action / (pow(len(self.availableChannels),index)))
             ifaceaction = ifaceaction % len(self.availableChannels)
             self.set_channel(interface['node'], interface['device'], interface['iface'],
                                 self.availableChannels[ifaceaction], None)
-        #try:
-        #    for index, actionStep in enumerate(action):
-        #        interface = self.actionSpace[index]
-        #        self.set_channel(interface['node'], interface['device'], interface['iface'], actionStep*4+1, None)
-        #except TypeError:
-        #    interface = self.actionSpace[0]
-        #    self.set_channel(interface['node'], interface['device'], interface['iface'], action*4+1, None)
         return
     
     def render():
         return
     
     def get_observationSpace(self):
+        '''
+            Returns observation space for open AI gym
+            result is a MultiDiscrete vector space
+            each component has the number of available channels. Is the same value for all entries
+        '''
         maxValues = [len(self.availableChannels) for i in self._create_interface_list()]
         #return spaces.Box(low=0, high=numChannels, shape=(len(self._create_interface_list()),0), dtype=numpy.float32)
         return spaces.MultiDiscrete(maxValues)
         #spaces.Box(low=0, high=10000000, shape=(len(self.observationSpace),), dtype=numpy.float32)
     
     def get_actionSpace(self):
+        '''
+            Returns action space for open AI gym
+            result is a Discrete scalar space
+            dimension is NumberOfChannels^NumberOfAPs
+        '''
         interfaceList = self._create_interface_list();
         if(len(interfaceList) > 0):
             self.log.info("UUIDs of the action space")
@@ -426,18 +420,29 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         return spaces.Discrete(pow(len(self.availableChannels), len(interfaceList)))
     
     def get_observation(self):
+        '''
+            Returns vector with state (channel) of each AP
+        '''
         channels = self.get_channels()
         observation = list(map(lambda x: x['channel number'], channels))
         return observation
     
     # game over if there is a new interface
     def get_gameOver(self):
+        '''
+            Test if topology changes
+            Bases on information, which client is registered at which AP
+        '''
         clients = self._create_client_list()
         clientHash = [i['mac'] + i['node'] + i['device'] + i['iface'] for i in clients]
         observationSpaceHash = [i['mac'] + i['node'] + i['device'] + i['iface'] for i in self.registeredClients]
         return not len(set(clientHash).symmetric_difference(set(observationSpaceHash))) == 0
     
     def get_reward(self):
+        '''
+            Calculate reward for the current state
+            reward = sum (sqrt(throughput of client))
+        '''
         # for simulation
         if(self.simulation):
             self.simulate_flows()
@@ -457,12 +462,21 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     
     
     def _get_bandwidth_by_client(self, bandwidthList, clientData):
+        '''
+            extracts bandwidth of client from bandwidth list
+            :param bandwidthList: List of all clients, the AP they are associated with and their bandwidth
+            :param clientData: data of the client. 
+        '''
         for mac, client in bandwidthList.items():
             if (mac == clientData['mac']) and (client['node']['uuid'] == clientData['node']) and (client['device']['uuid'] == clientData['device']) and (client['interface'] == clientData['iface']):
                 return client['bandwidth']
         return None
     
     def _create_client_list(self):
+        '''
+            create linear client list
+            result is list of dictionarys with attribute: mac, node, device, iface
+        '''
         clientList = []
         clients = self.get_bandwidth()
         for mac, client in clients.items():
@@ -472,6 +486,10 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         return clientList
     
     def _create_interface_list(self):
+        '''
+            create linear ap list
+            result is list of dictionarys with attribute: node, device, iface
+        '''
         interfaceList = []
         interfaces = self.get_interfaces()
         for nodeUuid, node in interfaces.items():
@@ -479,136 +497,3 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                 for iface in device['interfaces']:
                     interfaceList.append({'node': node['uuid'], 'device': device['uuid'], 'iface': iface})
         return interfaceList
-    
-    
-    
-    
-        '''
-        print(self.get_bandwidth())
-        
-        print(self.get_nodes())
-        for node in self.get_nodes():
-            print(node.get_devices())
-            for device  in node.get_devices():
-                device.spectral_scan_stop()
-                chnum = device.get_channel("wlan0")
-                chw = device.get_channel_width("wlan0")
-                infos = device.get_info_of_connected_devices("wlan0")
-                
-                for mac in infos:
-                    flows.append({'mac address' : mac, 'channel number' : chnum, 'channel width' : chw})
-                
-        for node in self.get_nodes():
-            print ("work " + node.hostname)
-            for device  in node.get_devices():
-            
-                if type(device.my_control_flow) is not list:
-                    device.my_control_flow = []
-                
-                for flow in device.my_control_flow:
-                    flow['old'] = True
-                
-                device.set_packet_counter(flows, "wlan0")
-                chnum = device.get_channel("wlan0")
-                chw = device.get_channel_width("wlan0")
-                infos = device.get_info_of_connected_devices("wlan0")
-                
-                bandwidth = {}
-                
-                for mac in infos:
-                    values = infos[mac]
-                    newTxBytes = int(values['tx bytes'][0])
-                    
-                    flow =  [d for d in device.my_control_flow if d['mac address'] == mac]
-                    if len(flow) > 0:
-                        flow = flow[0]
-                        dif = datetime.datetime.now() - flow['last update']
-                        bandwidth[mac] = (newTxBytes - flow['tx bytes'] ) / (dif.total_seconds() + dif.microseconds / 1000000.0)
-                        flow['tx bytes'] = newTxBytes
-                        flow['last update'] = datetime.datetime.now()
-                        flow['old'] = False
-                    else :
-                        device.my_control_flow.append({'mac address' : mac, 'tx bytes' : newTxBytes, 'last update' : datetime.datetime.now(), 'old' : False})
-                
-                for flow in device.my_control_flow:
-                    if flow['old']:
-                        device.my_control_flow.remove(flow)
-                
-                print ("device " + device.name + " operates on channel " + str(chnum) + " with a bandwidth of " + chw + " - change to channel " + str(self.channel))
-                print(bandwidth)
-                
-                device.blocking(False).set_channel(self.channel, "wlan0")
-                
-                self.channel += 1
-                if self.channel > 13:
-                    self.channel = 1
-        '''
-        '''
-        node = self.get_node(0)
-        device = node.get_device(0)
-
-        if device.is_packet_loss_monitor_running():
-            device.packet_loss_monitor_stop()
-            device.spectral_scan_stop()
-        else:
-            device.packet_loss_monitor_start()
-            device.spectral_scan_start()
-
-        avgFilterApp = None
-        for app in node.get_control_applications():
-            if app.name == "MyAvgFilter":
-                avgFilterApp = app
-                break
-
-        if avgFilterApp.is_running():
-            myValue = random.randint(1, 20)
-            [nValue1, nValue2] = avgFilterApp.blocking(True).add_two(myValue)
-            print("My value: {} + 2 = {}".format(myValue, nValue1))
-            print("My value: {} * 2 = {}".format(myValue, nValue2))
-            avgFilterApp.stop()
-
-            newWindow = random.randint(10, 50)
-            old = avgFilterApp.blocking(True).get_window_size()
-            print("Old Window Size : {}".format(old))
-            avgFilterApp.blocking(True).change_window_size_func(newWindow)
-            nValue = avgFilterApp.blocking(True).get_window_size()
-            print("New Window Size : {}".format(nValue))
-
-        else:
-            avgFilterApp.start()
-            newWindow = random.randint(10, 50)
-            event = ChangeWindowSizeEvent(newWindow)
-            avgFilterApp.send_event(event)
-
-        # execute non-blocking function immediately
-        device.blocking(False).set_tx_power(random.randint(1, 20), "wlan0")
-
-        # execute non-blocking function immediately, with specific callback
-        device.callback(self.get_power_cb).get_tx_power("wlan0")
-
-        # schedule non-blocking function delay
-        device.delay(3).callback(self.default_cb).get_tx_power("wlan0")
-
-        # schedule non-blocking function exec time
-        exec_time = datetime.datetime.now() + datetime.timedelta(seconds=3)
-        newChannel = random.randint(1, 11)
-        device.exec_time(exec_time).set_channel(newChannel, "wlan0")
-
-        # schedule execution of function multiple times
-        start_date = datetime.datetime.now() + datetime.timedelta(seconds=2)
-        interval = datetime.timedelta(seconds=1)
-        repetitionNum = 3
-        device.exec_time(start_date, interval, repetitionNum).callback(self.scheduled_get_channel_cb).get_channel("wlan0")
-
-        # execute blocking function immediately
-        result = device.get_channel("wlan0")
-        print("{} Channel is: {}".format(datetime.datetime.now(), result))
-
-        # exception handling, clean_per_flow_tx_power_table implementation
-        # raises exception
-        try:
-            device.clean_per_flow_tx_power_table("wlan0")
-        except Exception as e:
-            print("{} !!!Exception!!!: {}".format(
-                datetime.datetime.now(), e))
-        '''
