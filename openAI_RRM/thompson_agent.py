@@ -47,7 +47,7 @@ time_history = []
 rew_history = []
 
 numChannels = 2
-episode = 0
+episode = 1
 
 while True:
     run = 0
@@ -67,6 +67,8 @@ while True:
     avg = []
     num = []
     maxreward = 1
+    lastreward = 0
+    lastaction = 0
     
     done = False
     
@@ -85,13 +87,19 @@ while True:
         # generate random values
         randval = []
         for i in range(a_size):
-            randval.append(np.random.normal(avg[i]/maxreward, 1/(num[i] + 1), 1))
+            randval.append(np.random.normal(avg[i]/maxreward, 1/(pow(num[i],2) + 1), 1))
         
         #take index of highest value
         action = np.argmax(randval)
         
         #execute step
         next_state, reward, done, _ = env.step(action)
+        
+        #hysteresis
+        if action is not lastaction and abs(reward - lastreward) < 0.1:
+            reward = reward * 0.75
+        lastaction = action
+        lastreward = reward
         
         # add reward for further execution
         avg[action] = (avg[action] * num[action] + reward) / (num[action] + 2)
@@ -105,7 +113,7 @@ while True:
         if args.output:
             with open(args.output, 'a') as csvFile:
                 writer = csv.writer(csvFile)
-                writer.writerow([reward, action])
+                writer.writerow([reward, action, episode])
             csvFile.close()
         
         for ap in range(0, aps):

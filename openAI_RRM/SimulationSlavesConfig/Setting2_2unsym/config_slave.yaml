@@ -32,6 +32,6 @@ modules:
         'neighbors' : ['aa:aa:aa:aa:aa:02', 'aa:aa:aa:aa:aa:03'],
         'myMAC' : 'aa:aa:aa:aa:aa:01',
         'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault': 54000000, 
-            'channelThroughput':[54000000, 54000000, 54000000, 54000000, 26000000],
+        'channelThroughput':[54000000, 54000000, 54000000, 54000000, 26000000],
         'txBytesRandom':0}}
 

@@ -20,7 +20,9 @@ parser.add_argument('--config', help='path to the uniflex config file', default=
 parser.add_argument('--output', help='path to a csv file for agent output data', default=None)
 parser.add_argument('--plot', help='activate plotting', default=None)
 parser.add_argument('--steptime', help='interval between two steps', default=1)
-parser.add_argument('--steps', help='number of steps in this execution. If not set, the agents runs infinitly long', default=None)
+parser.add_argument('--steps', help='number of steps per episode. If not set, the agents runs infinitly long', default=None)
+parser.add_argument('--episodes', help='number of episodes in this execution. If not set, the agents runs infinitly long', default=1)
+parser.add_argument('--trainingfile', help='file to load and store training data', default=None)
 
 args = parser.parse_args()
 if not args.config:
@@ -28,7 +30,9 @@ if not args.config:
     os._exit(1)
 if not args.output:
     print("No output file specified! - Skip data")
-
+if not args.trainingfile:
+    print("No training file specified! - Start with unlearned agent")
+    
 if args.plot:
     import matplotlib.pyplot as plt
 
@@ -46,23 +50,25 @@ time_history = []
 rew_history = []
 
 numChannels = 2
-episode = 0
 
 while True:
-    run = 0
-    runs = []
-    rewards = []
-    actions = []
     
     state = env.reset()
     n = 0
     ac_space = env.action_space
     ob_space = env.observation_space
+    
+    print("reset agent")
     print("Observation space: ", ob_space,  ob_space.dtype)
     print("Action space: ", ac_space, ac_space.n)
 
-    s_size = ob_space.shape[0]
+    tmps_size = ob_space.shape
+    s_size = tmps_size[0] * tmps_size[1]
+    #s_size = list(map(lambda x: x * ob_space.high, s_size))
     a_size = ac_space.n
+    
+    print(s_size)
+    
     model = keras.Sequential()
     model.add(keras.layers.Dense(s_size, input_shape=(s_size,), activation='relu'))
     model.add(keras.layers.Dense(5, activation='relu'))
@@ -70,6 +76,15 @@ while True:
     model.compile(optimizer=tf.train.AdamOptimizer(0.001),
                   loss='categorical_crossentropy',
                   metrics=['accuracy'])
+    
+    if args.trainingfile and not os.path.isfile(args.trainingfile):
+        try:
+            model.load_weights(args.trainingfile)
+            print("Load model")
+        except ValueError:
+            print("Spaces does not match")
+    
+    print(state)
     try:
         state = np.reshape(state, [1, s_size])
     except ValueError:
@@ -78,88 +93,109 @@ while True:
     done = False
     
     if a_size == 0:
-        print("there is no vaild AP - sleep 10 seconds")
+        print("there is no vaild AP - sleep 2 seconds")
         time.sleep(2)
         continue
     
-    aps = int(log(a_size, numChannels))
+    episode = 1
     
-    for i in range(0, aps):
-        actions.append([])
-    
-    while not done:
-        # Choose action
-        #epsilon = 1
-        if np.random.rand(1) < epsilon:
-            action = np.random.randint(a_size)
-        else:
-            action = np.argmax(model.predict(state)[0])
+    while True:
+        print("start episode")
+        epsilon = 1.0
+        
+        run = 0
+        runs = []
+        rewards = []
+        actions = []
+        
+        aps = int(log(a_size, numChannels))
+        
+        for i in range(0, aps):
+            actions.append([])
+        
+        while not done:
+            # Choose action
+            if np.random.rand(1) < epsilon:
+                action = np.random.randint(a_size)
+            else:
+                action = np.argmax(model.predict(state)[0])
 
-        # Step
-        next_state, reward, done, _ = env.step(action)
-        
-        reward /= 1000
+            # Step
+            next_state, reward, done, _ = env.step(action)
+            
+            reward /= 1000
 
-        if done:
-        #    print("episode: {}/{}, time: {}, rew: {}, eps: {:.2}"
-        #          .format(e, total_episodes, time, rewardsum, epsilon))
-            break
+            if done:
+            #    print("episode: {}/{}, time: {}, rew: {}, eps: {:.2}"
+            #          .format(e, total_episodes, time, rewardsum, epsilon))
+                break
 
-        next_state = np.reshape(next_state, [1, s_size])
+            
+            next_state = np.reshape(next_state, [1, s_size])
+            obspacehigh = np.reshape(ob_space.high, [1, s_size])
+            
+            newstate = next_state / obspacehigh
 
-        # Train
-        target = reward
-        if not done:
-            target = (reward)# + 0.95 * np.amax(model.predict(next_state)[0]))
-        
-        print(target)
+            # Train
+            target = reward
+            if not done:
+                target = (reward)# + 0.95 * np.amax(model.predict(next_state)[0]))
+            
+            print(target)
+            
+            target_f = model.predict(state)
+            target_f[0][action] = target
+            model.fit(state, target_f, epochs=1, verbose=0)
 
-        target_f = model.predict(state)
-        target_f[0][action] = target
-        model.fit(state, target_f, epochs=1, verbose=0)
-
-        state = next_state
-        #rewardsum += reward
-        if epsilon > epsilon_min: epsilon *= epsilon_decay
-        
-        rewards.append(reward)
-        
-        
-        if args.output:
-            with open(args.output, 'a') as csvFile:
-                writer = csv.writer(csvFile)
-                writer.writerow([reward, action])
-            csvFile.close()
-        
-        for ap in range(0, aps):
-            ifaceaction = int(action / (pow(numChannels, ap)))
-            ifaceaction = ifaceaction % numChannels
-            actions[ap].append(ifaceaction)
-        
-        print ("Reward: " + str(reward))
-        print ("GameOver: " + str(done))
-        print ("Next Channels: " + str(next_state))
-        print ("Channel selection:" + str(action))
-        print ("next step")
-        
-        if args.plot:
-            plt.subplot(211)
-            plt.plot(run, reward, 'bo')                 # Additional point
-            plt.ylabel('reward')
-            plt.subplot(212)
-            #for ap in range(0, aps):
-            #    plt.plot(actions[ap])
-            plt.plot(run, action, 'bo')                 # Additional point
-            plt.ylabel('action')
-            plt.xlabel('step')
-            plt.pause(0.05)
-        
-        run += 1
-        
-        if args.steps and int(args.steps) < run:
-            os._exit(1)
-        
-    episode += 1
+            state = newstate
+            #rewardsum += reward
+            if epsilon > epsilon_min: epsilon *= epsilon_decay
+            
+            rewards.append(reward)
+            
+            if args.trainingfile:
+                model.save_weights(args.trainingfile)
+            
+            if args.output:
+                with open(args.output, 'a') as csvFile:
+                    writer = csv.writer(csvFile)
+                    writer.writerow([reward, action, episode])
+                csvFile.close()
+            
+            for ap in range(0, aps):
+                ifaceaction = int(action / (pow(numChannels, ap)))
+                ifaceaction = ifaceaction % numChannels
+                actions[ap].append(ifaceaction)
+            
+            print ("Reward: " + str(reward))
+            print ("GameOver: " + str(done))
+            print ("State: " + str(state))
+            print ("Channel selection:" + str(action))
+            print ("Run: " + str(run) + ", Episode: " + str(episode))
+            print ("next step")
+            
+            if args.plot:
+                plt.subplot(211)
+                plt.plot(run, reward, 'bo')                 # Additional point
+                plt.ylabel('reward')
+                plt.subplot(212)
+                #for ap in range(0, aps):
+                #    plt.plot(actions[ap])
+                plt.plot(run, action, 'bo')                 # Additional point
+                plt.ylabel('action')
+                plt.xlabel('step')
+                plt.pause(0.05)
+            
+            run += 1
+            
+            # next episode if enough steps, if enough episodes -> exit
+            if args.steps and int(args.steps) < run:
+                if args.episodes and int(args.episodes) <= episode:
+                    os._exit(1)
+                else:
+                    break
+            
+        episode += 1
 
 
 '''

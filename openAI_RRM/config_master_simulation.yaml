@@ -18,6 +18,7 @@ control_applications:
       openAIGymController: True
       kwargs : {
             'availableChannels' : [1,5],
+            'steptime' : 1,
             'simulation': True
       }
 

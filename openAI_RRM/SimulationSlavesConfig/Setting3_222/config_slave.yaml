@@ -31,5 +31,5 @@ modules:
       kwargs : { "clients" : ["cc:cc:cc:cc:cc:01", "cc:cc:cc:cc:cc:02"], 
         'neighbors' : ['aa:aa:aa:aa:aa:02'],
         'myMAC' : 'aa:aa:aa:aa:aa:01',
-        'simulation': {'channelSwitchingTime': 200, 'channelThroughput':54000000, 'txBytesRandom':0.2}}
+        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0}}
 
