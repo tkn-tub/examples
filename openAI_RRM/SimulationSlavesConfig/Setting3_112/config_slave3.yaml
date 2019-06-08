@@ -31,5 +31,5 @@ modules:
       kwargs : { "clients" : ["cc:cc:cc:cc:cc:21", "cc:cc:cc:cc:cc:22"], 
         'neighbors' : ['aa:aa:aa:aa:aa:01', 'aa:aa:aa:aa:aa:02'],
         'myMAC' : 'aa:aa:aa:aa:aa:03',
-        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0}}
+        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0, 'clientconf': '~/tu-cloud/Uni/Module/Bachelorarbeit_TI/Messungsautomatisierung/clientconfig/3_112_AP3'}}
 
