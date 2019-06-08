@@ -41,7 +41,7 @@ env = gym.make('uniflex-v0')
 #env.configure()
 env.start_controller(steptime=float(args.steptime), config=args.config)
 
-epsilon = 1.0               # exploration rate
+epsilon_max = 1.0               # exploration rate
 epsilon_min = 0.01
 #epsilon_decay = 0.99
 epsilon_decay = 0.995
@@ -54,6 +54,7 @@ numChannels = 2
 while True:
     
     state = env.reset()
+    
     n = 0
     ac_space = env.action_space
     ob_space = env.observation_space
@@ -68,6 +69,10 @@ while True:
     a_size = ac_space.n
     
     print(s_size)
+    
+    state = np.reshape(state, [1, s_size])
+    obspacehigh = np.reshape(ob_space.high, [1, s_size])
+    state = state *2 / obspacehigh - 1
     
     model = keras.Sequential()
     model.add(keras.layers.Dense(s_size, input_shape=(s_size,), activation='relu'))
@@ -97,7 +102,8 @@ while True:
         time.sleep(2)
         continue
     
-    episode = 1
+    episode = epsilon_max
+    epsilon_max = epsilon_max * 2/3
     
     while True:
         print("start episode")
@@ -107,6 +113,7 @@ while True:
         runs = []
         rewards = []
         actions = []
+        maxreward = 1
         
         aps = int(log(a_size, numChannels))
         
@@ -123,7 +130,9 @@ while True:
             # Step
             next_state, reward, done, _ = env.step(action)
             
-            reward /= 1000
+            maxreward = max(reward, maxreward)
+            
+            reward /= maxreward
 
             if done:
             #    print("episode: {}/{}, time: {}, rew: {}, eps: {:.2}"
@@ -133,8 +142,7 @@ while True:
             
             next_state = np.reshape(next_state, [1, s_size])
             obspacehigh = np.reshape(ob_space.high, [1, s_size])
-            
-            newstate = next_state / obspacehigh
+            newstate = next_state *2 / obspacehigh - 1
 
             # Train
             target = reward
@@ -144,7 +152,9 @@ while True:
             print(target)
             
             target_f = model.predict(state)
+            print(target_f)
             target_f[0][action] = target
+            print(target_f)
             model.fit(state, target_f, epochs=1, verbose=0)
 
             state = newstate

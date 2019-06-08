@@ -472,7 +472,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             the maximum is 10
         '''
         #maxValues = [len(self.availableChannels) for i in self._create_interface_list()]
-        return spaces.Box(low=0, high=10, shape=(len(self._create_interface_list()),2), dtype=numpy.uint32)
+        return spaces.Box(low=0, high=5, shape=(len(self._create_interface_list()),2), dtype=numpy.uint32)
         #return spaces.MultiDiscrete(maxValues)
         #spaces.Box(low=0, high=10000000, shape=(len(self.observationSpace),), dtype=numpy.float32)
     
