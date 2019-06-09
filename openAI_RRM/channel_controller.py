@@ -46,6 +46,10 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         self.actionSet = []
         self.simulation = False
         self.simulationsteps = None
+        self.aporder = None
+        
+        self.actionOrder = []
+        self.observationOrder = []
         
         if 'availableChannels' in kwargs:
             self.availableChannels = kwargs['availableChannels']
@@ -55,6 +59,9 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         
         if 'steptime' in kwargs:
             self.simulationsteptime = kwargs['steptime']
+        
+        if 'order' in kwargs:
+            self.aporder = kwargs['order']
 
     @modules.on_start()
     def my_start_function(self):
@@ -331,7 +338,15 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                 },
                 ...
             }
+            
+            fills self.aporder. Map index in uniflex to index in order list
+            fills self.observationOrder. Map index in agent to index in uniflex list
         '''
+        orphanApId  = 0
+        if self.aporder:
+            orphanApId = len(self.aporder)
+        
+        self.actionOrder = []
         interfaces = {}
         for node in self.get_nodes():
             nodeinfo = {'hostname': node.hostname, 'uuid': node.uuid}
@@ -341,10 +356,27 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                 interfaces_tmp = []
                 for interface in device.get_interfaces():
                     interfaces_tmp.append(interface)
+                    if self.aporder:
+                        try:
+                            mac = device.get_address(interface)
+                            indexInOrder = self.aporder.index(mac)
+                            self.actionOrder.append(indexInOrder)
+                        except ValueError:
+                            print("Device is unknown:" + mac)
+                            self.actionOrder.append(orphanApId)
+                            orphanApId += 1
+                    else:
+                        self.actionOrder.append(orphanApId)
+                        orphanApId += 1
+                
                 devinfo['interfaces'] = interfaces_tmp
                 devices[device.uuid] = devinfo
             nodeinfo['devices'] = devices
             interfaces[node.uuid] = nodeinfo
+        
+        self.observationOrder = []
+        for i in range(0, len(self.actionOrder)):
+            self.observationOrder.append(self.actionOrder.index(i))
         return interfaces
 
     def get_channels(self):
@@ -454,7 +486,8 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             channel value = (action/numberOfChannels^AP_id) mod numberOfChannels
         '''
         for index, interface in enumerate(self._create_interface_list()):
-            ifaceaction = int(action / (pow(len(self.availableChannels),index)))
+            apindex = self.actionOrder[index]
+            ifaceaction = int(action / (pow(len(self.availableChannels),apindex)))
             ifaceaction = ifaceaction % len(self.availableChannels)
             self.set_channel(interface['node'], interface['device'], interface['iface'],
                                 self.availableChannels[ifaceaction], None)
@@ -497,9 +530,13 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         '''
         client_nums = self.get_num_clients()
         neighbours_nums = self.get_num_neighbours()
-        result = []
+        resultUniflexOrder = []
         for i in range(0, len(neighbours_nums)):
-            result.append([client_nums[i], neighbours_nums[i]])
+            resultUniflexOrder.append([client_nums[i], neighbours_nums[i]])
+        #switch order of values in list
+        result = []
+        for i in range(0, len(resultUniflexOrder)):
+            result.append(resultUniflexOrder[self.observationOrder[i]])
         return result
     
     # game over if there is a new interface

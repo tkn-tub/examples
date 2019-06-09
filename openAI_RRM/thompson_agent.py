@@ -140,10 +140,10 @@ while True:
             plt.xlabel('step')
             plt.pause(0.05)
         
-        if args.steps and int(args.steps) < run:
-            os._exit(1)
-        
         run += 1
+        
+        if args.steps and int(args.steps) <= run:
+            os._exit(1)
         
     episode += 1
 

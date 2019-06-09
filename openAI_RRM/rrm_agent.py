@@ -15,6 +15,12 @@ import os
 from math import *
 
 
+def normalize_state(state, ob_space, s_size):
+    state = np.reshape(state, [1, s_size])
+    obspacehigh = np.reshape(ob_space.high, [1, s_size])
+    state = state *2 / obspacehigh - 1
+    return state
+
 parser = argparse.ArgumentParser(description='Uniflex reader')
 parser.add_argument('--config', help='path to the uniflex config file', default=None)
 parser.add_argument('--output', help='path to a csv file for agent output data', default=None)
@@ -70,9 +76,7 @@ while True:
     
     print(s_size)
     
-    state = np.reshape(state, [1, s_size])
-    obspacehigh = np.reshape(ob_space.high, [1, s_size])
-    state = state *2 / obspacehigh - 1
+    state = normalize_state(state, ob_space, s_size)
     
     model = keras.Sequential()
     model.add(keras.layers.Dense(s_size, input_shape=(s_size,), activation='relu'))
@@ -95,30 +99,39 @@ while True:
     except ValueError:
         continue
     rewardsum = 0
-    done = False
     
     if a_size == 0:
         print("there is no vaild AP - sleep 2 seconds")
         time.sleep(2)
         continue
     
-    episode = epsilon_max
-    epsilon_max = epsilon_max * 2/3
+    episode = 1
     
+    # Schleife für Episoden
     while True:
         print("start episode")
-        epsilon = 1.0
         
         run = 0
         runs = []
         rewards = []
         actions = []
-        maxreward = 1
+        maxreward = 0.00001
+        minreward = np.inf
+        
+        epsilon = epsilon_max
+        epsilon_max *= 0.999
+        epsilon_max = pow(epsilon_max, 3)
+        done = False
+        lastreward = 0
+        lastaction = 0
         
         aps = int(log(a_size, numChannels))
         
         for i in range(0, aps):
             actions.append([])
+        
+        state = env.reset()
+        state = normalize_state(state, ob_space, s_size)
         
         while not done:
             # Choose action
@@ -130,9 +143,24 @@ while True:
             # Step
             next_state, reward, done, _ = env.step(action)
             
-            maxreward = max(reward, maxreward)
+            minreward = min(reward, minreward)
+            reward -= minreward
             
+            maxreward = max(reward, maxreward)
             reward /= maxreward
+            
+            #set reward to 1.0 if it is first value
+            if maxreward == 0.00001:
+                reward = 1.0
+            
+            reward = pow(reward, 2)
+            
+            #hysteresis
+            if action != lastaction and abs(reward - lastreward) < 0.1:
+                reward *= 0.9
+            lastaction = action
+            lastreward = reward
+            
 
             if done:
             #    print("episode: {}/{}, time: {}, rew: {}, eps: {:.2}"
@@ -140,9 +168,7 @@ while True:
                 break
 
             
-            next_state = np.reshape(next_state, [1, s_size])
-            obspacehigh = np.reshape(ob_space.high, [1, s_size])
-            newstate = next_state *2 / obspacehigh - 1
+            next_state = normalize_state(next_state, ob_space, s_size)
 
             # Train
             target = reward
@@ -157,7 +183,7 @@ while True:
             print(target_f)
             model.fit(state, target_f, epochs=1, verbose=0)
 
-            state = newstate
+            state = next_state
             #rewardsum += reward
             if epsilon > epsilon_min: epsilon *= epsilon_decay
             
@@ -199,7 +225,7 @@ while True:
             run += 1
             
             # next episode if enough steps, if enough episodes -> exit
-            if args.steps and int(args.steps) < run:
+            if args.steps and int(args.steps) <= run:
                 if args.episodes and int(args.episodes) <= episode:
                     os._exit(1)
                 else:

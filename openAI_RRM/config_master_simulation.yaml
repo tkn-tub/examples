@@ -19,7 +19,8 @@ control_applications:
       kwargs : {
             'availableChannels' : [1,5],
             'steptime' : 1,
-            'simulation': True
+            'simulation': True,
+            'order': ['aa:aa:aa:aa:aa:01', 'aa:aa:aa:aa:aa:02','aa:aa:aa:aa:aa:03']
       }
 
 modules:

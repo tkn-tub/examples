@@ -31,5 +31,6 @@ modules:
       kwargs : { "clients" : ["cc:cc:cc:cc:cc:01", "cc:cc:cc:cc:cc:02"], 
         'neighbors' : ['aa:aa:aa:aa:aa:02', 'aa:aa:aa:aa:aa:03'],
         'myMAC' : 'aa:aa:aa:aa:aa:01',
-        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0, 'clientconf': '~/tu-cloud/Uni/Module/Bachelorarbeit_TI/Messungsautomatisierung/clientconfig/3_112_AP1'}}
+        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0, 'clientnum':1, 'clientconf': '/home/sascha/tu-cloud/Uni/Module/Bachelorarbeit_TI/Messungsautomatisierung/clientconfig/3_112_AP1'
+        }}
 
