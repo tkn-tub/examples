@@ -358,7 +358,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                     interfaces_tmp.append(interface)
                     if self.aporder:
                         try:
-                            mac = device.get_address(interface)
+                            mac = device.getHwAddr(interface)
                             indexInOrder = self.aporder.index(mac)
                             self.actionOrder.append(indexInOrder)
                         except ValueError:
@@ -375,6 +375,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             interfaces[node.uuid] = nodeinfo
         
         self.observationOrder = []
+        print(self.actionOrder)
         for i in range(0, len(self.actionOrder)):
             self.observationOrder.append(self.actionOrder.index(i))
         return interfaces
@@ -425,7 +426,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                     chnum = device.get_channel(interface)
                     chw = device.get_channel_width(interface)
                     infos = device.get_info_of_connected_devices(interface)
-                    mac = device.get_address()
+                    mac = device.getHwAddr()
                     
                     flows.append({'mac address' : mac, 'channel number' : chnum, 'channel width' : chw, 'iface': interface})
         

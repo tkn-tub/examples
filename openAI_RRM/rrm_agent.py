@@ -13,7 +13,10 @@ import time
 import csv
 import os
 from math import *
+from scipy.optimize import fsolve
 
+AVGTIME_ONEVALUE_RAND = 20
+RANDVALUE_FIRST_EPISODE = 0.55   #60%
 
 def normalize_state(state, ob_space, s_size):
     state = np.reshape(state, [1, s_size])
@@ -21,13 +24,24 @@ def normalize_state(state, ob_space, s_size):
     state = state *2 / obspacehigh - 1
     return state
 
+def guess_random_numbers_in_firstEpisode(a_size):
+    return AVGTIME_ONEVALUE_RAND * a_size
+
+def guess_steps(a_size):
+    return guess_random_numbers_in_firstEpisode(a_size) / RANDVALUE_FIRST_EPISODE
+
+def guess_epsilon_decay(steps, a_size):
+    func = lambda epsilon_decay: guess_random_numbers_in_firstEpisode(a_size) - (1-epsilon_decay**(steps + 1)) / (1 - epsilon_decay)
+    return fsolve(func, 0.9999999999)[0]
+
 parser = argparse.ArgumentParser(description='Uniflex reader')
 parser.add_argument('--config', help='path to the uniflex config file', default=None)
 parser.add_argument('--output', help='path to a csv file for agent output data', default=None)
 parser.add_argument('--plot', help='activate plotting', default=None)
 parser.add_argument('--steptime', help='interval between two steps', default=1)
-parser.add_argument('--steps', help='number of steps per episode. If not set, the agents runs infinitly long', default=None)
-parser.add_argument('--episodes', help='number of episodes in this execution. If not set, the agents runs infinitly long', default=1)
+#parser.add_argument('--steps', help='number of steps per episode. If not set, the agents runs infinitly long', default=None)
+parser.add_argument('--episodes', help='number of episodes in this execution. If not set, the agents runs infinitly long', default=None)
+parser.add_argument('--startepisode', help='The episode we start with', default=1)
 parser.add_argument('--trainingfile', help='file to load and store training data', default=None)
 
 args = parser.parse_args()
@@ -41,6 +55,8 @@ if not args.trainingfile:
     
 if args.plot:
     import matplotlib.pyplot as plt
+
+print("Start at episode " + str(args.startepisode))
 
 #create uniflex environment, steptime is 10sec
 env = gym.make('uniflex-v0')
@@ -74,7 +90,7 @@ while True:
     #s_size = list(map(lambda x: x * ob_space.high, s_size))
     a_size = ac_space.n
     
-    print(s_size)
+    print("observation_space size:" + str(s_size))
     
     state = normalize_state(state, ob_space, s_size)
     
@@ -92,8 +108,10 @@ while True:
             print("Load model")
         except ValueError:
             print("Spaces does not match")
+        except tf.errors.NotFoundError:
+            print("File not found. Skip loading")
     
-    print(state)
+    print("State (Observation) of System" + str(state))
     try:
         state = np.reshape(state, [1, s_size])
     except ValueError:
@@ -105,7 +123,21 @@ while True:
         time.sleep(2)
         continue
     
+    steps = guess_steps(a_size)
+    epsilon_decay = guess_epsilon_decay(steps, a_size)
+    print("Initialize agent. Exploration rate is " + str(epsilon_decay) 
+        + ", an episode has at most " + str(steps) + " steps")
+    
+    rewardpow = int(log(a_size, 2))
+    
     episode = 1
+    maxreward = 0.00001
+    minreward = np.inf
+    
+    while episode < int(args.startepisode):
+        epsilon_max *= 0.999
+        epsilon_max = max(pow(epsilon_max, 3), epsilon_min)
+        episode += 1
     
     # Schleife für Episoden
     while True:
@@ -115,20 +147,18 @@ while True:
         runs = []
         rewards = []
         actions = []
-        maxreward = 0.00001
-        minreward = np.inf
         
         epsilon = epsilon_max
         epsilon_max *= 0.999
-        epsilon_max = pow(epsilon_max, 3)
+        epsilon_max = max(pow(epsilon_max, 3), epsilon_min)
         done = False
         lastreward = 0
         lastaction = 0
         
         aps = int(log(a_size, numChannels))
         
-        for i in range(0, aps):
-            actions.append([])
+        #for i in range(0, aps):
+        #    actions.append([])
         
         state = env.reset()
         state = normalize_state(state, ob_space, s_size)
@@ -153,7 +183,7 @@ while True:
             if maxreward == 0.00001:
                 reward = 1.0
             
-            reward = pow(reward, 2)
+            reward = pow(reward, rewardpow)
             
             #hysteresis
             if action != lastaction and abs(reward - lastreward) < 0.1:
@@ -165,6 +195,8 @@ while True:
             if done:
             #    print("episode: {}/{}, time: {}, rew: {}, eps: {:.2}"
             #          .format(e, total_episodes, time, rewardsum, epsilon))
+                maxreward = 0.00001
+                minreward = np.inf
                 break
 
             
@@ -175,22 +207,19 @@ while True:
             if not done:
                 target = (reward)# + 0.95 * np.amax(model.predict(next_state)[0]))
             
-            print(target)
+            print("Scaled reward: " + str(target))
             
             target_f = model.predict(state)
-            print(target_f)
+            print("agent learning" + str(target_f))
             target_f[0][action] = target
-            print(target_f)
+            print("agent new learning" + str(target_f))
             model.fit(state, target_f, epochs=1, verbose=0)
 
             state = next_state
             #rewardsum += reward
             if epsilon > epsilon_min: epsilon *= epsilon_decay
             
-            rewards.append(reward)
-            
-            if args.trainingfile:
-                model.save_weights(args.trainingfile)
+            #rewards.append(reward)
             
             if args.output:
                 with open(args.output, 'a') as csvFile:
@@ -198,10 +227,10 @@ while True:
                     writer.writerow([reward, action, episode])
                 csvFile.close()
             
-            for ap in range(0, aps):
-                ifaceaction = int(action / (pow(numChannels, ap)))
-                ifaceaction = ifaceaction % numChannels
-                actions[ap].append(ifaceaction)
+            #for ap in range(0, aps):
+            #    ifaceaction = int(action / (pow(numChannels, ap)))
+            #    ifaceaction = ifaceaction % numChannels
+            #    actions[ap].append(ifaceaction)
             
             print ("Reward: " + str(reward))
             print ("GameOver: " + str(done))
@@ -225,7 +254,9 @@ while True:
             run += 1
             
             # next episode if enough steps, if enough episodes -> exit
-            if args.steps and int(args.steps) <= run:
+            if steps <= run:
+                if args.trainingfile:
+                    model.save_weights(args.trainingfile)
                 if args.episodes and int(args.episodes) <= episode:
                     os._exit(1)
                 else:
