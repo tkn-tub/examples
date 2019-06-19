@@ -16,12 +16,23 @@ from math import *
 from scipy.optimize import fsolve
 
 AVGTIME_ONEVALUE_RAND = 20
-RANDVALUE_FIRST_EPISODE = 0.55   #60%
+RANDVALUE_FIRST_EPISODE = 0.55
+REWARD_INIT = 0.00001
+sortedIndecies = []
+ac_space = []
 
 def normalize_state(state, ob_space, s_size):
     state = np.reshape(state, [1, s_size])
     obspacehigh = np.reshape(ob_space.high, [1, s_size])
     state = state *2 / obspacehigh - 1
+    
+    #sort states
+    index = np.arange(state.shape[0])
+    index = index.reshape((-1,1))
+    state = np.insert(state, -1, index, axis=1)
+    state = np.sort(state.view('i8,i8,i8'), order=['f0', 'f1'], axis=0).view(np.int)
+    sortedIndecies = state[:,-1]
+    state = np.delete(state, -1, axis=1)
     return state
 
 def guess_random_numbers_in_firstEpisode(a_size):
@@ -33,6 +44,15 @@ def guess_steps(a_size):
 def guess_epsilon_decay(steps, a_size):
     func = lambda epsilon_decay: guess_random_numbers_in_firstEpisode(a_size) - (1-epsilon_decay**(steps + 1)) / (1 - epsilon_decay)
     return fsolve(func, 0.9999999999)[0]
+
+def map_action(mappedAction):
+    action = np.zeros(len(mappedAction))
+    for index in range(len(ac_space.nvec)):
+        # filter action by the index
+        ifaceaction = int(mappedAction / (pow(ac_space.nvec[0] ,index)))
+        ifaceaction = ifaceaction % ac_space.nvec[0]
+        action[np.where(action == index)[0]] = ifaceaction
+    return action
 
 parser = argparse.ArgumentParser(description='Uniflex reader')
 parser.add_argument('--config', help='path to the uniflex config file', default=None)
@@ -88,7 +108,7 @@ while True:
     tmps_size = ob_space.shape
     s_size = tmps_size[0] * tmps_size[1]
     #s_size = list(map(lambda x: x * ob_space.high, s_size))
-    a_size = ac_space.n
+    a_size = pow(ac_space.nvec[0], ac_space.nvec.shape[0])
     
     print("observation_space size:" + str(s_size))
     
@@ -131,7 +151,7 @@ while True:
     rewardpow = int(log(a_size, 2))
     
     episode = 1
-    maxreward = 0.00001
+    maxreward = REWARD_INIT
     minreward = np.inf
     
     while episode < int(args.startepisode):
@@ -170,6 +190,8 @@ while True:
             else:
                 action = np.argmax(model.predict(state)[0])
 
+            action = map_action(action)
+            
             # Step
             next_state, reward, done, _ = env.step(action)
             
@@ -180,7 +202,7 @@ while True:
             reward /= maxreward
             
             #set reward to 1.0 if it is first value
-            if maxreward == 0.00001:
+            if maxreward == REWARD_INIT:
                 reward = 1.0
             
             reward = pow(reward, rewardpow)
@@ -195,7 +217,7 @@ while True:
             if done:
             #    print("episode: {}/{}, time: {}, rew: {}, eps: {:.2}"
             #          .format(e, total_episodes, time, rewardsum, epsilon))
-                maxreward = 0.00001
+                maxreward = REWARD_INIT
                 minreward = np.inf
                 break
 

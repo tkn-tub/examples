@@ -47,6 +47,10 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         self.simulation = False
         self.simulationsteps = None
         self.aporder = None
+        self.mode = ""
+        self.scenarios = 1
+        self.currentScenario = 0
+        
         
         self.actionOrder = []
         self.observationOrder = []
@@ -62,6 +66,12 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         
         if 'order' in kwargs:
             self.aporder = kwargs['order']
+        
+        if 'mode' in kwargs:
+            self.mode = kwargs['mode']
+        
+        if 'scenarios' in kwargs:
+            self.scenarios = kwargs['scenarios']
 
     @modules.on_start()
     def my_start_function(self):
@@ -434,7 +444,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         for node in self.get_nodes():
             for device  in node.get_devices():
                 for interface in device.get_interfaces():
-                    device.set_packet_counter(flows, interface, self.simulationsteptime)
+                    device.set_packet_counter(flows, interface, self.simulationsteptime, self.currentScenario)
 
     @modules.on_event(PeriodicEvaluationTimeEvent)
     def periodic_evaluation(self, event):
@@ -462,6 +472,15 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         self.observationSpace = self.get_observationSpace()
         self.actionSpace = self.get_actionSpace()
         self.actionSet = []
+        self.currentScenario = 0
+        
+        self.observations = []
+        for obs in range(self.scenarios):
+            obsElem = []
+            neighbours_nums = self.get_num_neighbours()
+            for i in range(0, len(neighbours_nums)):
+                obsElem.append([0, 0])
+            self.observations.append(obsElem)
         
         interfaces = self.get_interfaces()
         
@@ -488,8 +507,9 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         '''
         for index, interface in enumerate(self._create_interface_list()):
             apindex = self.actionOrder[index]
-            ifaceaction = int(action / (pow(len(self.availableChannels),apindex)))
-            ifaceaction = ifaceaction % len(self.availableChannels)
+            ifaceaction = action[apindex]
+            #ifaceaction = int(action / (pow(len(self.availableChannels),apindex)))
+            #ifaceaction = ifaceaction % len(self.availableChannels)
             self.set_channel(interface['node'], interface['device'], interface['iface'],
                                 self.availableChannels[ifaceaction], None)
         return
@@ -523,7 +543,9 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             self.log.info(str(key) + ":" + interface['device'])
         if len(interfaceList) == 0:
             return spaces.Discrete(0)
-        return spaces.Discrete(pow(len(self.availableChannels), len(interfaceList)))
+        maxValues = [len(self.availableChannels) for i in self._create_interface_list()]
+        return spaces.MultiDiscrete(maxValues)
+        #([ 5, 2, 2 ])(pow(len(self.availableChannels), len(interfaceList)))
     
     def get_observation(self):
         '''
@@ -538,6 +560,15 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         result = []
         for i in range(0, len(resultUniflexOrder)):
             result.append(resultUniflexOrder[self.observationOrder[i]])
+        
+        if self.mode == "training":
+            #store obsersavion for next time with this scenario
+            self.observations[self.currentScenario] = result
+            #load obsersavion for next scenario
+            self.currentScenario ++
+            if self.currentScenario >= self.scenarios:
+                self.currentScenario = 0
+            result = self.observations[self.currentScenario]
         return result
     
     # game over if there is a new interface
