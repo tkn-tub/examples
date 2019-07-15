@@ -29,10 +29,13 @@ modules:
       class_name : SimpleModule4
       devices : ['phy0']
       kwargs : { "clients" : ["cc:cc:cc:cc:cc:21", "cc:cc:cc:cc:cc:22", "cc:cc:cc:cc:cc:23", "cc:cc:cc:cc:cc:24", "cc:cc:cc:cc:cc:25", "cc:cc:cc:cc:cc:26"],
-        'neighbors' : [['aa:aa:aa:aa:aa:02'], ['aa:aa:aa:aa:aa:02'], ['aa:aa:aa:aa:aa:02'], ['aa:aa:aa:aa:aa:02'], ['aa:aa:aa:aa:aa:02']],
+        'neighbors' : [['aa:aa:aa:aa:aa:02', 'aa:aa:aa:aa:aa:01'], ['aa:aa:aa:aa:aa:02', 'aa:aa:aa:aa:aa:01'], ['aa:aa:aa:aa:aa:02'], ['aa:aa:aa:aa:aa:02'], ['aa:aa:aa:aa:aa:01']],
         'myMAC' : 'aa:aa:aa:aa:aa:03',
-        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0, 
-        'mode': 'training', # training or working
-        'numsClients': [1,3,5,4,2]
+        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0, 'clientnum':2, 'clientconf': '/home/sascha/tu-cloud/Uni/Module/Bachelorarbeit_TI/Messungsautomatisierung/clientconfig/3_112_AP3', 
+        'mode': 'generator', # training or working or generator
+        'numsClients': [5,2,3,2,2],
+            #for generator
+            'maxNumClients' : 100,
+            'scenariosPerAPSetting': 40
         }}
 

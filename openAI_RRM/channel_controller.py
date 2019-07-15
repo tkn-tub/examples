@@ -41,7 +41,6 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         self.channel = 1
         self.availableChannels = []
         self.observationSpace = []
-        self.registeredClients = self._create_client_list()
         self.lastObservation = []
         self.actionSet = []
         self.simulation = False
@@ -54,6 +53,8 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         
         self.actionOrder = []
         self.observationOrder = []
+        
+        self.registeredClients = self._create_interface_list()
         
         if 'availableChannels' in kwargs:
             self.availableChannels = kwargs['availableChannels']
@@ -212,7 +213,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                     client_nums.append(len(infos))
         return client_nums
     
-    def get_num_neighbours(self):
+    def get_num_current_neighbours(self):
         '''
             Returns a list of numbers of neighbours of each ap
         '''
@@ -221,6 +222,18 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             for device  in node.get_devices():
                 for interface in device.get_interfaces():
                     infos = device.get_current_neighbours(interface)
+                    neighbours.append(len(infos))
+        return neighbours
+    
+    def get_num_neighbours(self):
+        '''
+            Returns a list of numbers of neighbours of each ap
+        '''
+        neighbours = []
+        for node in self.get_nodes():
+            for device  in node.get_devices():
+                for interface in device.get_interfaces():
+                    infos = device.get_neighbours(interface)
                     neighbours.append(len(infos))
         return neighbours
 
@@ -250,8 +263,10 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             for device  in node.get_devices():
                 if type(device.my_control_flow) is not list:
                     device.my_control_flow = []
+                    for i in range(self.scenarios):
+                        device.my_control_flow.append([])
                 
-                for flow in device.my_control_flow:
+                for flow in device.my_control_flow[self.currentScenario]:
                     flow['old'] = True
                 
                 for interface in device.get_interfaces():
@@ -261,12 +276,13 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                         values = infos[mac]
                         newTxBytes = int(values['tx bytes'][0])
                         
-                        flow =  [d for d in device.my_control_flow if d['mac address'] == mac]
+                        flow =  [d for d in device.my_control_flow[self.currentScenario] if d['mac address'] == mac]
                         if len(flow) > 0:
                             flow = flow[0]
                             dif = datetime.datetime.now() - flow['last update']
                             tmpBandwidth = (newTxBytes - flow['tx bytes'] ) / (dif.total_seconds() + dif.microseconds / 1000000.0)
                             if(self.simulation and self.simulationsteptime):
+                                #print("calculate bandwidth: " + str(newTxBytes - flow['tx bytes']) + " Bytes in " + str(self.simulationsteptime))
                                 tmpBandwidth = (newTxBytes - flow['tx bytes'] ) / (self.simulationsteptime)
                             bandwidth[mac] = {
                                 'bandwidth':(tmpBandwidth),
@@ -277,7 +293,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                             flow['last update'] = datetime.datetime.now()
                             flow['old'] = False
                         else :
-                            device.my_control_flow.append({'mac address' : mac, 'tx bytes' : newTxBytes, 'last update' : datetime.datetime.now(), 'old' : False})
+                            device.my_control_flow[self.currentScenario].append({'mac address' : mac, 'tx bytes' : newTxBytes, 'last update' : datetime.datetime.now(), 'old' : False})
                             bandwidth[mac] = {
                                 'mac' : mac,
                                 'bandwidth': 0,
@@ -285,9 +301,9 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                                 'device': {'name': device.name, 'uuid': device.uuid},
                                 'interface': interface}
                 
-                for flow in device.my_control_flow:
+                for flow in device.my_control_flow[self.currentScenario]:
                     if flow['old']:
-                        device.my_control_flow.remove(flow)
+                        device.my_control_flow[self.currentScenario].remove(flow)
         return bandwidth
     
     def _get_raw_clientlist(self):
@@ -315,8 +331,10 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             for device  in node.get_devices():
                 if type(device.my_control_flow) is not list:
                     device.my_control_flow = []
+                    for i in range(self.scenarios):
+                        device.my_control_flow.append([])
                 
-                for flow in device.my_control_flow:
+                for flow in device.my_control_flow[self.currentScenario]:
                     flow['old'] = True
                 
                 for interface in device.get_interfaces():
@@ -439,7 +457,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                     mac = device.getHwAddr()
                     
                     flows.append({'mac address' : mac, 'channel number' : chnum, 'channel width' : chw, 'iface': interface})
-        
+        print("simulate for " + str(self.currentScenario))
         # simulate packet counter on AP modules
         for node in self.get_nodes():
             for device  in node.get_devices():
@@ -468,7 +486,8 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
     
     
     def reset(self):
-        self.registeredClients = self._create_client_list()
+        print("reset")
+        self.registeredClients = self._create_interface_list()
         self.observationSpace = self.get_observationSpace()
         self.actionSpace = self.get_actionSpace()
         self.actionSet = []
@@ -498,6 +517,11 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         if(self.simulation):
             self.simulate_flows()
         self.get_bandwidth()
+        
+        # fill obsersavion buffer
+        for i in range(self.scenarios):
+            self.get_observation()
+        self.currentScenario = self.scenarios -1
         return
     
     def execute_action(self, action):
@@ -511,7 +535,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             #ifaceaction = int(action / (pow(len(self.availableChannels),apindex)))
             #ifaceaction = ifaceaction % len(self.availableChannels)
             self.set_channel(interface['node'], interface['device'], interface['iface'],
-                                self.availableChannels[ifaceaction], None)
+                                self.availableChannels[int(ifaceaction)], None)
         return
     
     def render():
@@ -526,7 +550,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             the maximum is 10
         '''
         #maxValues = [len(self.availableChannels) for i in self._create_interface_list()]
-        return spaces.Box(low=0, high=5, shape=(len(self._create_interface_list()),2), dtype=numpy.uint32)
+        return spaces.Box(low=0, high=6, shape=(len(self._create_interface_list()),2), dtype=numpy.uint32)
         #return spaces.MultiDiscrete(maxValues)
         #spaces.Box(low=0, high=10000000, shape=(len(self.observationSpace),), dtype=numpy.float32)
     
@@ -542,7 +566,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         for key, interface in enumerate(interfaceList):
             self.log.info(str(key) + ":" + interface['device'])
         if len(interfaceList) == 0:
-            return spaces.Discrete(0)
+            return spaces.MultiDiscrete([0])
         maxValues = [len(self.availableChannels) for i in self._create_interface_list()]
         return spaces.MultiDiscrete(maxValues)
         #([ 5, 2, 2 ])(pow(len(self.availableChannels), len(interfaceList)))
@@ -558,14 +582,17 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             resultUniflexOrder.append([client_nums[i], neighbours_nums[i]])
         #switch order of values in list
         result = []
+        
         for i in range(0, len(resultUniflexOrder)):
+            if i >= len(self.observationOrder):
+                break
             result.append(resultUniflexOrder[self.observationOrder[i]])
         
         if self.mode == "training":
             #store obsersavion for next time with this scenario
             self.observations[self.currentScenario] = result
             #load obsersavion for next scenario
-            self.currentScenario ++
+            self.currentScenario += 1
             if self.currentScenario >= self.scenarios:
                 self.currentScenario = 0
             result = self.observations[self.currentScenario]
@@ -577,9 +604,9 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             Test if topology changes
             Bases on information, which client is registered at which AP
         '''
-        clients = self._create_client_list()
-        clientHash = [i['mac'] + i['node'] + i['device'] + i['iface'] for i in clients]
-        observationSpaceHash = [i['mac'] + i['node'] + i['device'] + i['iface'] for i in self.registeredClients]
+        clients = self._create_interface_list()
+        clientHash = [i['node'] + i['device'] + i['iface'] for i in clients] # i['mac']
+        observationSpaceHash = [i['node'] + i['device'] + i['iface'] for i in self.registeredClients] #i['mac']
         return not len(set(clientHash).symmetric_difference(set(observationSpaceHash))) == 0
     
     def get_reward(self):

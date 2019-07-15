@@ -29,10 +29,10 @@ modules:
       class_name : SimpleModule4
       devices : ['phy0']
       kwargs : { "clients" : ["cc:cc:cc:cc:cc:11", "cc:cc:cc:cc:cc:12", "cc:cc:cc:cc:cc:13", "cc:cc:cc:cc:cc:14", "cc:cc:cc:cc:cc:15", "cc:cc:cc:cc:cc:16"],
-        'neighbors' : [['aa:aa:aa:aa:aa:02', 'aa:aa:aa:aa:aa:03'], ['aa:aa:aa:aa:aa:02', 'aa:aa:aa:aa:aa:03'], ['aa:aa:aa:aa:aa:02', 'aa:aa:aa:aa:aa:03'], ['aa:aa:aa:aa:aa:02', 'aa:aa:aa:aa:aa:03'], ['aa:aa:aa:aa:aa:02', 'aa:aa:aa:aa:aa:03']],
+        'neighbors' : [['aa:aa:aa:aa:aa:01', 'aa:aa:aa:aa:aa:03'], ['aa:aa:aa:aa:aa:01', 'aa:aa:aa:aa:aa:03'], ['aa:aa:aa:aa:aa:01', 'aa:aa:aa:aa:aa:03'], ['aa:aa:aa:aa:aa:01', 'aa:aa:aa:aa:aa:03'], []],
         'myMAC' : 'aa:aa:aa:aa:aa:02',
         'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0, 'clientnum':1, 'clientconf': '/home/sascha/tu-cloud/Uni/Module/Bachelorarbeit_TI/Messungsautomatisierung/clientconfig/3_112_AP2', 
         'mode': 'training', # training or working
-        'numsClients': [0,1,2,1,2]
+        'numsClients': [1,1,1,1,1]
         }}
 

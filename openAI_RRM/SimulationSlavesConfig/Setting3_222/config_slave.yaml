@@ -28,8 +28,10 @@ modules:
       module : uniflex_module_simple
       class_name : SimpleModule4
       devices : ['phy0']
-      kwargs : { "clients" : ["cc:cc:cc:cc:cc:01", "cc:cc:cc:cc:cc:02"], 
-        'neighbors' : ['aa:aa:aa:aa:aa:02'],
+      kwargs : { "clients" : ["cc:cc:cc:cc:cc:01", "cc:cc:cc:cc:cc:02", "cc:cc:cc:cc:cc:03", "cc:cc:cc:cc:cc:04", "cc:cc:cc:cc:cc:05", "cc:cc:cc:cc:cc:06"], 
+        'neighbors' : [['aa:aa:aa:aa:aa:02'], ['aa:aa:aa:aa:aa:02'], ['aa:aa:aa:aa:aa:02'], ['aa:aa:aa:aa:aa:02'], ['aa:aa:aa:aa:aa:02']],
         'myMAC' : 'aa:aa:aa:aa:aa:01',
-        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0}}
+        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0,
+        'mode': 'training', # training or working
+        'numsClients': [1,1,5,1,2]}}
 
