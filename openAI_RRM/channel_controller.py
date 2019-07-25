@@ -351,21 +351,23 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         '''
             Returns a data structure of all available interfaces in the system
             It is structured as follows:
-            {
-                'uuid_of_node_1': {
+            [
+                {
                     'hostname' : 'hostname of node1',
                     'uuid' : 'uuid of node1',
-                    'devices' : {
-                        'name' : 'name of device1',
-                        'uuid' : 'uuid of device1',
-                        'interfaces' : [
-                            'name of iface1', 'name of iface2'
-                        ]
-                    },
+                    'devices' : [
+                        {
+                            'name' : 'name of device1',
+                            'uuid' : 'uuid of device1',
+                            'interfaces' : [
+                                'name of iface1', 'name of iface2'
+                            ]
+                        },
+                    ],
                     ...
                 },
                 ...
-            }
+            ]
             
             fills self.aporder. Map index in uniflex to index in order list
             fills self.observationOrder. Map index in agent to index in uniflex list
@@ -375,10 +377,10 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             orphanApId = len(self.aporder)
         
         self.actionOrder = []
-        interfaces = {}
+        interfaces = []
         for node in self.get_nodes():
             nodeinfo = {'hostname': node.hostname, 'uuid': node.uuid}
-            devices = {}
+            devices = []
             for device  in node.get_devices():
                 devinfo = {'name': device.name, 'uuid': device.uuid}
                 interfaces_tmp = []
@@ -398,9 +400,9 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                         orphanApId += 1
                 
                 devinfo['interfaces'] = interfaces_tmp
-                devices[device.uuid] = devinfo
+                devices.append(devinfo)
             nodeinfo['devices'] = devices
-            interfaces[node.uuid] = nodeinfo
+            interfaces.append(nodeinfo)
         
         self.observationOrder = []
         print(self.actionOrder)
@@ -505,22 +507,23 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         
         # set a start channel for each interface:
         channel = 1
-        for nodeUuid, node in interfaces.items():
-            for devUuid, device in node['devices'].items():
+        for node in interfaces:
+            for device in node['devices']:
                 for iface in device['interfaces']:
                     self.set_channel(
                         node['uuid'], device['uuid'], iface, channel, None)
                     channel += 5
                     if channel > 12:
                         channel = 1
-        # clear bandwidth counter
-        if(self.simulation):
-            self.simulate_flows()
-        self.get_bandwidth()
         
         # fill obsersavion buffer
         for i in range(self.scenarios):
             self.get_observation()
+            # clear bandwidth counter
+            if(self.simulation):
+                self.simulate_flows()
+            self.get_bandwidth()
+        
         self.currentScenario = self.scenarios -1
         return
     
@@ -532,6 +535,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         for index, interface in enumerate(self._create_interface_list()):
             apindex = self.actionOrder[index]
             ifaceaction = action[apindex]
+            #self.log.info(str(index) + "List-AP is " + str(apindex) + " registered AP, gets channel " + str(self.availableChannels[int(ifaceaction)]) + ", UUID: " +str(interface['device']))
             #ifaceaction = int(action / (pow(len(self.availableChannels),apindex)))
             #ifaceaction = ifaceaction % len(self.availableChannels)
             self.set_channel(interface['node'], interface['device'], interface['iface'],
@@ -619,6 +623,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
             self.simulate_flows()
         
         bandwidthList = self.get_bandwidth()
+        #self.log.info("Bandwidth: " + str(bandwidthList))
         #bandwidth = sorted(bandwidth, key=lambda k: k['mac'])
         reward = 0
         for key in bandwidthList:
@@ -663,8 +668,8 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         '''
         interfaceList = []
         interfaces = self.get_interfaces()
-        for nodeUuid, node in interfaces.items():
-            for devUuid, device in node['devices'].items():
+        for node in interfaces:
+            for device in node['devices']:
                 for iface in device['interfaces']:
                     interfaceList.append({'node': node['uuid'], 'device': device['uuid'], 'iface': iface})
         return interfaceList
