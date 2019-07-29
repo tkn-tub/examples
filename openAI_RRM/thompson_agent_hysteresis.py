@@ -97,8 +97,8 @@ while True:
         next_state, reward, done, _ = env.step(actionVector)
         
         #hysteresis
-        #if action != lastaction and abs(reward - lastreward) < 0.1:
-        #    reward = reward * 0.75
+        if action != lastaction and abs(reward - lastreward) < 0.1:
+            reward = reward * 0.75
         lastaction = action
         lastreward = reward
         

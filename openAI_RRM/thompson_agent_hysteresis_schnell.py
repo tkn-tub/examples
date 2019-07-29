@@ -87,7 +87,7 @@ while True:
         # generate random values
         randval = []
         for i in range(a_size):
-            randval.append(np.random.normal(avg[i]/maxreward, 1/(pow(num[i],1) + 1), 1))
+            randval.append(np.random.normal(avg[i]/maxreward, 1/(pow(num[i],2) + 1), 1))
         
         # take index of highest value
         action = np.argmax(randval)
@@ -97,8 +97,8 @@ while True:
         next_state, reward, done, _ = env.step(actionVector)
         
         #hysteresis
-        #if action != lastaction and abs(reward - lastreward) < 0.1:
-        #    reward = reward * 0.75
+        if action != lastaction and abs(reward - lastreward) < 0.1:
+            reward = reward * 0.75
         lastaction = action
         lastreward = reward
         

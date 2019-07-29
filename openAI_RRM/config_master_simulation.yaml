@@ -7,9 +7,9 @@ config:
   sub: "tcp://127.0.0.1:8990"
   pub: "tcp://127.0.0.1:8989"
 
-broker:
-  xpub: "tcp://127.0.0.1:8990"
-  xsub: "tcp://127.0.0.1:8989"
+#broker:
+#  xpub: "tcp://127.0.0.1:8990"
+#  xsub: "tcp://127.0.0.1:8989"
 
 control_applications:
   myController:
@@ -21,7 +21,7 @@ control_applications:
             'steptime' : 1,
             'simulation': True,
             'mode': 'training', # training or working
-            'scenarios': 180,
+            'scenarios': 1,
             'order': ['aa:aa:aa:aa:aa:01', 'aa:aa:aa:aa:aa:02','aa:aa:aa:aa:aa:03', 'aa:aa:aa:aa:aa:04', 'aa:aa:aa:aa:aa:05','aa:aa:aa:aa:aa:06', 'aa:aa:aa:aa:aa:07','aa:aa:aa:aa:aa:08']
       }
 

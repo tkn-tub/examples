@@ -32,7 +32,6 @@ modules:
         'neighbors' : [['aa:aa:aa:aa:aa:01', 'aa:aa:aa:aa:aa:03']],
         'myMAC' : 'aa:aa:aa:aa:aa:02',
         'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0, 
-        ,
         'mode': 'singel', # training or working
         'clientnum': 2
         }}

@@ -20,10 +20,10 @@ import datetime
 from functools import reduce
 
 AVGTIME_ONEVALUE_RAND = 2
-RANDVALUE_FIRST_EPISODE = 0.9
+RANDVALUE_FIRST_EPISODE = 0.7
 REWARD_INIT = 0.00001
-SORT_VALUES = True
-SCENARIOS = 180
+SORT_VALUES = False
+SCENARIOS = 1
 EPSILON_MAX_DECAY = 0.95
 EPSILON_MIN = 0.01
 ACTIVATE_OBSERVER = False
@@ -180,7 +180,7 @@ while True:
     tmps_size = ob_space.shape
     s_size = tmps_size[0] * tmps_size[1]
     #s_size = list(map(lambda x: x * ob_space.high, s_size))
-    a_size = pow(ac_space.nvec[0], ac_space.nvec.shape[0])
+    a_size = int(pow(ac_space.nvec[0], ac_space.nvec.shape[0]))
     
     if a_size == 0:
         print("there is no vaild AP - sleep 2 seconds")
