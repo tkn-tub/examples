@@ -32,28 +32,28 @@ if not args.output:
 if args.plot:
     import matplotlib.pyplot as plt
 
+ac_space = []
 
-#create uniflex environment, steptime is 10sec
+def map_action(mappedAction):
+    action = np.zeros(len(ac_space.nvec))
+    for index in range(len(ac_space.nvec)):
+        # filter action by the index
+        ifaceaction = int(mappedAction / (pow(ac_space.nvec[0] ,index)))
+        ifaceaction = ifaceaction % ac_space.nvec[0]
+        action[index] = ifaceaction
+    return action
+
+
+#create uniflex environment
 env = gym.make('uniflex-v0')
 #env.configure()
 env.start_controller(steptime=float(args.steptime), config=args.config)
-
-epsilon = 1.0               # exploration rate
-epsilon_min = 0.01
-#epsilon_decay = 0.99
-epsilon_decay = 0.995
-
-time_history = []
-rew_history = []
 
 numChannels = 2
 episode = 1
 
 while True:
     run = 0
-    runs = []
-    rewards = []
-    actions = []
     
     state = env.reset()
     n = 0
@@ -62,7 +62,7 @@ while True:
     print("Observation space: ", ob_space,  ob_space.dtype)
     print("Action space: ", ac_space, ac_space.n)
 
-    a_size = int(ac_space.n)
+    a_size = pow(ac_space.nvec[0], ac_space.nvec.shape[0])
     
     avg = []
     num = []
@@ -89,11 +89,12 @@ while True:
         for i in range(a_size):
             randval.append(np.random.normal(avg[i]/maxreward, 1/(pow(num[i],1) + 1), 1))
         
-        #take index of highest value
+        # take index of highest value
         action = np.argmax(randval)
         
         #execute step
-        next_state, reward, done, _ = env.step(action)
+        actionVector = map_action
+        next_state, reward, done, _ = env.step(actionVector)
         
         #hysteresis
         if action != lastaction and abs(reward - lastreward) < 0.1:
@@ -108,18 +109,11 @@ while True:
         maxreward = np.maximum(maxreward, reward)
         
         # statistics
-        rewards.append(reward)
-        
         if args.output:
             with open(args.output, 'a') as csvFile:
                 writer = csv.writer(csvFile)
                 writer.writerow([reward, action, episode])
             csvFile.close()
-        
-        for ap in range(0, aps):
-            ifaceaction = int(action / (pow(numChannels, ap)))
-            ifaceaction = ifaceaction % numChannels
-            #actions[ap].append(ifaceaction)
         
         print ("Reward: " + str(reward))
         print ("GameOver: " + str(done))
@@ -133,8 +127,6 @@ while True:
             plt.plot(run, reward, 'bo')                 # Additional point
             plt.ylabel('reward')
             plt.subplot(212)
-            #for ap in range(0, aps):
-            #    plt.plot(actions[ap])
             plt.plot(run, action, 'bo')                 # Additional point
             plt.ylabel('action')
             plt.xlabel('step')
@@ -146,69 +138,3 @@ while True:
             os._exit(1)
         
     episode += 1
-
-
-'''
-ob_space = env.observation_space
-ac_space = env.action_space
-print("Observation space: ", ob_space,  ob_space.dtype)
-print("Action space: ", ac_space, ac_space.n)
-
-s_size = ob_space.shape[0]
-a_size = ac_space.n
-model = keras.Sequential()
-model.add(keras.layers.Dense(s_size, input_shape=(s_size,), activation='relu'))
-model.add(keras.layers.Dense(a_size, activation='softmax'))
-model.compile(optimizer=tf.train.AdamOptimizer(0.001),
-              loss='categorical_crossentropy',
-              metrics=['accuracy'])
-
-total_episodes = 200
-max_env_steps = 100
-env._max_episode_steps = max_env_steps
-
-epsilon = 1.0               # exploration rate
-epsilon_min = 0.01
-epsilon_decay = 0.999
-
-time_history = []
-rew_history = []
-
-for e in range(total_episodes):
-
-    state = env.reset()
-    state = np.reshape(state, [1, s_size])
-    rewardsum = 0
-    for time in range(max_env_steps):
-        # Choose action
-        if np.random.rand(1) < epsilon:
-            action = np.random.randint(a_size)
-        else:
-            action = np.argmax(model.predict(state)[0])
-        
-        # Step
-        next_state, reward, done, _ = env.step(action)
-        
-        if done:
-            print("episode: {}/{}, time: {}, rew: {}, eps: {:.2}"
-                  .format(e, total_episodes, time, rewardsum, epsilon))
-            break
-        
-        next_state = np.reshape(next_state, [1, s_size])
-        
-        # Train
-        target = reward
-        if not done:
-            target = (reward + 0.95 * np.amax(model.predict(next_state)[0]))
-        
-        target_f = model.predict(state)
-        target_f[0][action] = target
-        model.fit(state, target_f, epochs=1, verbose=0)
-        
-        state = next_state
-        rewardsum += reward
-        if epsilon > epsilon_min: epsilon *= epsilon_decay
-        
-    time_history.append(time)
-    rew_history.append(rewardsum)
-'''

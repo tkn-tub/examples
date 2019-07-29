@@ -512,8 +512,8 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
                 for iface in device['interfaces']:
                     self.set_channel(
                         node['uuid'], device['uuid'], iface, channel, None)
-                    channel += 5
-                    if channel > 12:
+                    channel += 6
+                    if channel > 14:
                         channel = 1
         
         # fill obsersavion buffer

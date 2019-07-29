@@ -29,7 +29,7 @@ modules:
       class_name : SimpleModule4
       devices : ['phy0']
       kwargs : { "clients" : ["cc:cc:cc:cc:06:01"], 
-        'neighbors' : ['aa:aa:aa:aa:aa:03','aa:aa:aa:aa:aa:05','aa:aa:aa:aa:aa:08'],
+        'neighbors' : [['aa:aa:aa:aa:aa:03','aa:aa:aa:aa:aa:05','aa:aa:aa:aa:aa:08']],
         'myMAC' : 'aa:aa:aa:aa:aa:06',
-        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0}}
+        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0, 'clientnum':1, 'mode': 'single'}}
 
