@@ -49,7 +49,7 @@ def normalize_state(state, ob_space, s_size):
     
     state = np.reshape(state, [1, s_size])
     # obspacehigh = np.reshape(ob_space.high, [1, s_size])
-    state = state - 1 #*2 / obspacehigh - 1
+    # state = state - 1 #*2 / obspacehigh - 1
     
     return state
 
@@ -63,7 +63,7 @@ def guess_steps(a_size):
     return stepidea
 
 def guess_epsilon_decay(steps, a_size):
-    func = lambda epsilon_decay: guess_random_numbers_in_firstEpisode(a_size) - (1-epsilon_decay**(steps + 1)) / (1 - epsilon_decay)
+    func = lambda epsilon_decay: guess_random_numbers_in_firstEpisode(a_size) - (1-epsilon_decay**(steps )) / (1 - epsilon_decay)
     return fsolve(func, 0.9999999999)[0]
 
 def map_action(mappedAction):
