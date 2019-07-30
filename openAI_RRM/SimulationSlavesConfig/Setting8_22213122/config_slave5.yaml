@@ -8,9 +8,9 @@ config:
   sub: "tcp://127.0.0.1:8990"
   pub: "tcp://127.0.0.1:8989"
 
-broker:
-  xsub: "tcp://127.0.0.1:8990"
-  xpub: "tcp://127.0.0.1:8989"
+#broker:
+#  xsub: "tcp://127.0.0.1:8990"
+#  xpub: "tcp://127.0.0.1:8989"
 
 control_applications:
   myFilter:
