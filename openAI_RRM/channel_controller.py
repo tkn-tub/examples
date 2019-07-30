@@ -233,8 +233,13 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         for node in self.get_nodes():
             for device  in node.get_devices():
                 for interface in device.get_interfaces():
-                    infos = device.get_neighbours(interface)
-                    neighbours.append(len(infos))
+                    try:
+                        infos = device.get_neighbours(interface)
+                        neighbours.append(len(infos))
+                    except AttributeError:
+                        if self.scenarios > 1:
+                            print("Device module does not support get_neighbours, but there are multiple scenarios!")
+                        neighbours.append(1)
         return neighbours
 
     def get_bandwidth(self):
@@ -570,7 +575,7 @@ class UniflexChannelController(modules.ControlApplication, UniFlexController):
         for key, interface in enumerate(interfaceList):
             self.log.info(str(key) + ":" + interface['device'])
         if len(interfaceList) == 0:
-            return spaces.MultiDiscrete([0])
+            return spaces.MultiDiscrete([])
         maxValues = [len(self.availableChannels) for i in self._create_interface_list()]
         return spaces.MultiDiscrete(maxValues)
         #([ 5, 2, 2 ])(pow(len(self.availableChannels), len(interfaceList)))

@@ -180,7 +180,9 @@ while True:
     tmps_size = ob_space.shape
     s_size = tmps_size[0] * tmps_size[1]
     #s_size = list(map(lambda x: x * ob_space.high, s_size))
-    a_size = int(pow(ac_space.nvec[0], ac_space.nvec.shape[0]))
+    a_size = 0
+    if len(ac_space.nvec) > 0:
+        a_size = int(pow(ac_space.nvec[0], ac_space.nvec.shape[0]))
     
     if a_size == 0:
         print("there is no vaild AP - sleep 2 seconds")

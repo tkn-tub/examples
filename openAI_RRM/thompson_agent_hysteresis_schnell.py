@@ -62,7 +62,9 @@ while True:
     print("Observation space: ", ob_space,  ob_space.dtype)
     print("Action space: ", ac_space, ac_space.nvec)
 
-    a_size = int(pow(ac_space.nvec[0], ac_space.nvec.shape[0]))
+    a_size = 0
+    if len(ac_space.nvec) > 0:
+        a_size = int(pow(ac_space.nvec[0], ac_space.nvec.shape[0]))
     
     avg = []
     num = []
