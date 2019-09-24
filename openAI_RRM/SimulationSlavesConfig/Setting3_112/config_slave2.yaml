@@ -8,16 +8,7 @@ config:
   sub: "tcp://127.0.0.1:8990"
   pub: "tcp://127.0.0.1:8989"
 
-#broker:
-#  xsub: "tcp://127.0.0.1:8990"
-#  xpub: "tcp://127.0.0.1:8989"
-
 control_applications:
-  myFilter:
-      file : my_filter.py
-      class_name : MyAvgFilter
-      kwargs : {"window": 5}
-
   discovery:
       module : uniflex_app_discovery_pyre
       class_name : PyreDiscoverySlaveModule

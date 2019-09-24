@@ -2,22 +2,13 @@
 
 config:
   name: 'HC node'
-  info: 'filter runs on local node'
+  info: 'rrm multi scenario simulation'
   iface: 'lo'
   iface: 'lo'
   sub: "tcp://127.0.0.1:8990"
   pub: "tcp://127.0.0.1:8989"
 
-broker:
-  xsub: "tcp://127.0.0.1:8990"
-  xpub: "tcp://127.0.0.1:8989"
-
 control_applications:
-  myFilter:
-      file : my_filter.py
-      class_name : MyAvgFilter
-      kwargs : {"window": 5}
-
   discovery:
       module : uniflex_app_discovery_pyre
       class_name : PyreDiscoverySlaveModule
@@ -31,13 +22,13 @@ modules:
       kwargs : { "clients" : ["cc:cc:cc:cc:cc:21", "cc:cc:cc:cc:cc:22", "cc:cc:cc:cc:cc:23", "cc:cc:cc:cc:cc:24", "cc:cc:cc:cc:cc:25", "cc:cc:cc:cc:cc:26"],
         'neighbors' : [['aa:aa:aa:aa:aa:02', 'aa:aa:aa:aa:aa:01'], ['aa:aa:aa:aa:aa:02'], ['aa:aa:aa:aa:aa:01']],
         'myMAC' : 'aa:aa:aa:aa:aa:03',
-        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0, 'clientnum':2, 'clientconf': '/home/sascha/tu-cloud/Uni/Module/Bachelorarbeit_TI/Messungsautomatisierung/clientconfig/3_112_AP3', 
+        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault':54000000, 'txBytesRandom':0, 'clientnum':2, 'clientconf': 'path-to-configfiles/3_112_AP3', 
         'mode': 'generator', # training or working or generator
         'numsClients': [5,2,3,2,2],
             #for generator
             'maxNumClients' : 100,
             'scenariosPerAPSetting': 60,
             'clientPrefix' : "cc:cc:cc:cc:03:",
-            'scenarioBackup' : '/home/sascha/tu-cloud/Uni/Module/Bachelorarbeit_TI/Messungsautomatisierung/simulationMeasurements_2/test/logs/AP3_scenarios.var'
+            'scenarioBackup' : 'path-to-backup-files/AP3_scenarios.var'
         }}
 

@@ -24,7 +24,7 @@ RANDVALUE_FIRST_EPISODE = 0.9
 REWARD_INIT = 0.00001
 SORT_VALUES = False
 SCENARIOS = 1
-EPSILON_MAX_DECAY = 0.95
+EPSILON_MAX_DECAY = 0.999999999999 #0.95
 EPSILON_MIN = 0.01
 ACTIVATE_OBSERVER = False
 
@@ -104,7 +104,7 @@ def normalize_reward(reward, rewardpow, action):
     
     #set reward to 1.0 if it is first value
     if maxreward[currentScenario] == REWARD_INIT:
-        reward = 1.0
+        reward = 1.0 #/ (2**rewardpow)
     
     reward = pow(reward, rewardpow)
     
@@ -252,7 +252,7 @@ while True:
     
     while episode < int(args.startepisode):
         epsilon_max *= EPSILON_MAX_DECAY
-        epsilon_max = max(epsilon_max, EPSILON_MIN)#max(pow(epsilon_max, 3), EPSILON_MIN)
+        epsilon_max = max(pow(epsilon_max, 3), EPSILON_MIN) # max(epsilon_max, EPSILON_MIN)#
         episode += 1
     
     # Schleife für Episoden
@@ -266,7 +266,7 @@ while True:
         
         epsilon = epsilon_max
         epsilon_max *= EPSILON_MAX_DECAY
-        epsilon_max = max(epsilon_max, EPSILON_MIN)#max(pow(epsilon_max, 3), EPSILON_MIN)
+        epsilon_max = max(pow(epsilon_max, 3), EPSILON_MIN) #max(epsilon_max, EPSILON_MIN)
         done = False
         
         aps = int(log(a_size, numChannels))
