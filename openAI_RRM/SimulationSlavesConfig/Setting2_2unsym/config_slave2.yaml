@@ -1,0 +1,32 @@
+## UniFlex Agent config file
+
+config:
+  name: 'HC node'
+  info: 'rrm control simulation'
+  iface: 'lo'
+  iface: 'lo'
+  sub: "tcp://127.0.0.1:8990"
+  pub: "tcp://127.0.0.1:8989"
+
+#broker:
+#  xsub: "tcp://127.0.0.1:8990"
+#  xpub: "tcp://127.0.0.1:8989"
+
+control_applications:
+  discovery:
+      module : uniflex_app_discovery_pyre
+      class_name : PyreDiscoverySlaveModule
+      kwargs: {"iface":"lo", "groupName":"uniflex_1234"}
+
+modules:
+  simple:
+      module : uniflex_module_simple
+      class_name : SimpleModule4
+      devices : ['phy0']
+      kwargs : { "clients" : ["cc:cc:cc:cc:cc:11"], 
+        'neighbors' : [['aa:aa:aa:aa:aa:01', 'aa:aa:aa:aa:aa:03']],
+        'myMAC' : 'aa:aa:aa:aa:aa:02',
+        'simulation': {'channelSwitchingTime': 0, 'channelThroughputDefault': 54000000, 
+        'channelThroughput':[54000000, 54000000, 54000000, 54000000, 26000000],
+        'txBytesRandom':0, 'clientnum':2, 'mode': 'single'}}
+
