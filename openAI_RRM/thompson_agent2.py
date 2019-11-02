@@ -16,7 +16,7 @@ from math import *
 
 
 parser = argparse.ArgumentParser(description='Uniflex reader')
-parser.add_argument('--config', help='path to the uniflex config file', default=None)
+parser.add_argument('--config', help='path to the uniflex config file', default=None, required=True)
 parser.add_argument('--output', help='path to a csv file for agent output data', default=None)
 parser.add_argument('--plot', help='activate plotting', default=None)
 parser.add_argument('--steptime', help='interval between two steps', default=1)
